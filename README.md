@@ -17,13 +17,13 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/masorange/apps-livebox-sdk-swift.git", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/masorange/livebox-sdk-swift.git", .upToNextMajor(from: "1.0.0"))
 ]
 ```
 
 Or add it directly in Xcode:
 1. Go to File > Swift Packages > Add Package Dependency
-2. Enter the repository URL: `https://github.com/masorange/apps-livebox-sdk-swift.git`
+2. Enter the repository URL: `https://github.com/masorange/livebox-sdk-swift.git`
 
 ## Quick Start
 
