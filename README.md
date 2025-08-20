@@ -1,4 +1,4 @@
-# Livebox iOS SDK
+# Livebox Swift SDK
 
 A Swift package for interacting with Livebox routers. This SDK provides a clean, type-safe way to interact with router APIs without hardcoding endpoints.
 
