@@ -38,7 +38,7 @@ let service = try LiveboxAPI(baseURLString: "http://192.168.1.1")
 // Authenticate when needed
 try await service.login(password: "yourpassword")
 
-// Alternative: Create service with authentication upfront (legacy style)
+// Alternative: Create service with authentication upfront
 let authenticatedService = try LiveboxAPI(
     baseURLString: "http://192.168.1.1",
     username: "admin",

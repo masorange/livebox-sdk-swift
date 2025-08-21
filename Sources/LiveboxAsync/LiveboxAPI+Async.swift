@@ -107,13 +107,13 @@ extension LiveboxAPI {
     }
 
     /// Gets a specific router's Wi-Fi interface using async/await.
-    /// - Parameter id: The ID of the Wi-Fi interface.
+    /// - Parameter wlanIfc: The ID of the Wi-Fi interface.
     /// - Returns: The requested Wi-Fi interface.
     /// - Throws: An error if the request fails.
-    public func getWifiInterface(id: String) async throws(LiveboxError) -> WlanInterface {
+    public func getWlanInterface(wlanIfc: String) async throws(LiveboxError) -> WlanInterface {
         try await withErrorType(LiveboxError.self) {
             try await withCheckedThrowingContinuation { continuation in
-                _ = getWlanInterface(wlanIfc: id) { result in
+                _ = getWlanInterface(wlanIfc: wlanIfc) { result in
                     continuation.resume(with: result)
                 }
             }
