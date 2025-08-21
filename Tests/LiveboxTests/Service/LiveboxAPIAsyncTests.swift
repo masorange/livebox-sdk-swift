@@ -150,7 +150,7 @@ struct LiveboxAPIAsyncTests {
         mockClient.mockResponses[FeatureID.wlanInterface.id] = expectedInterface
 
         // When
-        let interface = try await service.getWifiInterface(id: "wl0")
+        let interface = try await service.getWlanInterface(wlanIfc: "wl0")
 
         // Then
         #expect(interface.id == "wl0")
@@ -164,7 +164,7 @@ struct LiveboxAPIAsyncTests {
 
         // When/Then
         do {
-            _ = try await service.getWifiInterface(id: "wl0")
+            _ = try await service.getWlanInterface(wlanIfc: "wl0")
             Issue.record("Expected failure but got success")
         } catch .featureNotFound(let message) {
             #expect(message == "WlanInterface")

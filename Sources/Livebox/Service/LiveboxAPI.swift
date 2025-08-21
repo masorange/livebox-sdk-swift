@@ -217,7 +217,7 @@ public class LiveboxAPI {
 
     /// Gets a specific router's Wi-Fi interface.
     /// - Parameters:
-    ///   - id: The ID of the Wi-Fi interface.
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
     ///   - completion: A callback to invoke with the result.
     /// - Returns: A URLSessionDataTask that can be used to cancel the request.
     @discardableResult
