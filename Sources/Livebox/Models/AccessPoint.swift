@@ -44,6 +44,52 @@ public struct AccessPoint: Codable {
         case mode = "Mode"
         case schedulingAllowed = "SchedulingAllowed"
     }
+
+    public init(
+        idx: String? = nil,
+        bssid: String,
+        type: AccessPointType,
+        manner: Manner,
+        status: Status,
+        ssid: String,
+        password: String,
+        ssidAdvertisementEnabled: Bool? = nil,
+        retryLimit: Int? = nil,
+        wmmCapability: Bool? = nil,
+        uapsdCapability: Bool? = nil,
+        wmmEnable: Bool? = nil,
+        uapsdEnable: Bool? = nil,
+        maxStations: Int? = nil,
+        apBridgeDisable: Bool? = nil,
+        channelConf: ChannelConf,
+        channel: Int,
+        bandwidthConf: BandwidthConf,
+        bandwidth: String,
+        mode: String? = nil,
+        schedulingAllowed: Bool
+    ) {
+        self.idx = idx
+        self.bssid = bssid
+        self.type = type
+        self.manner = manner
+        self.status = status
+        self.ssid = ssid
+        self.password = password
+        self.ssidAdvertisementEnabled = ssidAdvertisementEnabled
+        self.retryLimit = retryLimit
+        self.wmmCapability = wmmCapability
+        self.uapsdCapability = uapsdCapability
+        self.wmmEnable = wmmEnable
+        self.uapsdEnable = uapsdEnable
+        self.maxStations = maxStations
+        self.apBridgeDisable = apBridgeDisable
+        self.channelConf = channelConf
+        self.channel = channel
+        self.bandwidthConf = bandwidthConf
+        self.bandwidth = bandwidth
+        self.mode = mode
+        self.schedulingAllowed = schedulingAllowed
+    }
 }
 
 extension AccessPoint {

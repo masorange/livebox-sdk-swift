@@ -6,6 +6,11 @@ public struct ScheduleStatus: Codable {
         case mac = "MAC"
         case status = "Status"
     }
+
+    public init(mac: String, status: Status) {
+        self.mac = mac
+        self.status = status
+    }
 }
 
 extension ScheduleStatus {

@@ -14,6 +14,22 @@ public struct WlanInterface: Codable {
         case lastChange = "LastChange"
         case accessPoints = "AccessPoints"
     }
+
+    public init(
+        id: String,
+        status: Status,
+        frequency: String,
+        lastChangeTime: Int? = nil,
+        lastChange: Int? = nil,
+        accessPoints: [ShortAccessPoint]
+    ) {
+        self.id = id
+        self.status = status
+        self.frequency = frequency
+        self.lastChangeTime = lastChangeTime
+        self.lastChange = lastChange
+        self.accessPoints = accessPoints
+    }
 }
 
 extension WlanInterface {
@@ -70,6 +86,18 @@ extension WlanInterface {
             case ssid = "SSID"
             case status = "Status"
             case remainingDuration = "RemainingDuration"
+        }
+
+        public init(
+            bssid: String,
+            ssid: String,
+            status: Status,
+            remainingDuration: Int? = nil
+        ) {
+            self.bssid = bssid
+            self.ssid = ssid
+            self.status = status
+            self.remainingDuration = remainingDuration
         }
     }
 }

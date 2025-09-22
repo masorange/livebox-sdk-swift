@@ -44,7 +44,7 @@ public struct Wifi: Codable {
         case frequency = "Frequency"
     }
 
-    init(id: String, status: Status, frequency: Frequency, wifiStatusButton: Bool? = nil) {
+    public init(id: String, status: Status, frequency: Frequency, wifiStatusButton: Bool? = nil) {
         self.id = id
         self.status = status
         self.frequency = frequency
