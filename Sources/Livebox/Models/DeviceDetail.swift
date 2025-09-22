@@ -29,6 +29,66 @@ public struct DeviceDetail: Codable {
     public let deviceType: String
     public let deviceSource: String?
     public let deviceID: String
+
+    public init(
+        physAddress: String,
+        ipAddress: String,
+        ipV6Address: String,
+        addressSource: String? = nil,
+        detectedTypes: String? = nil,
+        leaseTimeRemaining: Int? = nil,
+        vendorClassID: String? = nil,
+        clientID: String? = nil,
+        userClassID: String? = nil,
+        hostName: String,
+        alias: String,
+        uPnPNames: String? = nil,
+        mDNSNames: String? = nil,
+        lLTDDevice: Bool? = nil,
+        SSID: String,
+        active: Bool,
+        lastConnection: String,
+        tags: String,
+        layer2Interface: Int,
+        interfaceType: String,
+        manufacturerOUI: String? = nil,
+        serialNumber: String? = nil,
+        productClass: String? = nil,
+        deviceIcon: String? = nil,
+        deviceLocation: String? = nil,
+        deviceType: String,
+        deviceSource: String? = nil,
+        deviceID: String
+    ) {
+        self.physAddress = physAddress
+        self.ipAddress = ipAddress
+        self.ipV6Address = ipV6Address
+        self.addressSource = addressSource
+        self.detectedTypes = detectedTypes
+        self.leaseTimeRemaining = leaseTimeRemaining
+        self.vendorClassID = vendorClassID
+        self.clientID = clientID
+        self.userClassID = userClassID
+        self.hostName = hostName
+        self.alias = alias
+        self.uPnPNames = uPnPNames
+        self.mDNSNames = mDNSNames
+        self.lLTDDevice = lLTDDevice
+        self.SSID = SSID
+        self.active = active
+        self.lastConnection = lastConnection
+        self.tags = tags
+        self.layer2Interface = layer2Interface
+        self.interfaceType = interfaceType
+        self.manufacturerOUI = manufacturerOUI
+        self.serialNumber = serialNumber
+        self.productClass = productClass
+        self.deviceIcon = deviceIcon
+        self.deviceLocation = deviceLocation
+        self.deviceType = deviceType
+        self.deviceSource = deviceSource
+        self.deviceID = deviceID
+    }
 }
 
 extension DeviceDetail {

@@ -116,4 +116,64 @@ public struct GeneralInfo: Codable {
         case routerImage = "RouterImage"
         case routerName = "RouterName"
     }
+
+    public init(
+        manufacturer: String,
+        manufacturerOUI: String? = nil,
+        modelName: String,
+        description: String? = nil,
+        productClass: String,
+        serialNumber: String,
+        hardwareVersion: String,
+        softwareVersion: String,
+        rescueVersion: String? = nil,
+        modemFirmwareVersion: String? = nil,
+        enabledOptions: String? = nil,
+        additionalHardwareVersion: String? = nil,
+        additionalSoftwareVersion: String? = nil,
+        specVersion: String? = nil,
+        provisioningCode: String? = nil,
+        upTime: Int? = nil,
+        firstUseDate: String? = nil,
+        deviceLog: String? = nil,
+        vendorConfigFileNumberOfEntries: String? = nil,
+        manufacturerURL: String? = nil,
+        country: String? = nil,
+        numberOfReboots: Int? = nil,
+        upgradeOccurred: Bool? = nil,
+        resetOccurred: Bool? = nil,
+        restoreOccurred: Bool? = nil,
+        apiVersion: String? = nil,
+        routerImage: String? = nil,
+        routerName: String? = nil
+    ) {
+        self.manufacturer = manufacturer
+        self.manufacturerOUI = manufacturerOUI
+        self.modelName = modelName
+        self.description = description
+        self.productClass = productClass
+        self.serialNumber = serialNumber
+        self.hardwareVersion = hardwareVersion
+        self.softwareVersion = softwareVersion
+        self.rescueVersion = rescueVersion
+        self.modemFirmwareVersion = modemFirmwareVersion
+        self.enabledOptions = enabledOptions
+        self.additionalHardwareVersion = additionalHardwareVersion
+        self.additionalSoftwareVersion = additionalSoftwareVersion
+        self.specVersion = specVersion
+        self.provisioningCode = provisioningCode
+        self.upTime = upTime
+        self.firstUseDate = firstUseDate
+        self.deviceLog = deviceLog
+        self.vendorConfigFileNumberOfEntries = vendorConfigFileNumberOfEntries
+        self.manufacturerURL = manufacturerURL
+        self.country = country
+        self.numberOfReboots = numberOfReboots
+        self.upgradeOccurred = upgradeOccurred
+        self.resetOccurred = resetOccurred
+        self.restoreOccurred = restoreOccurred
+        self.apiVersion = apiVersion
+        self.routerImage = routerImage
+        self.routerName = routerName
+    }
 }
