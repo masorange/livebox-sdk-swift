@@ -63,7 +63,7 @@ public enum TestHelpers {
         ipV6Address: String = "",
         hostName: String = "TestDevice",
         alias: String = "Test Device",
-        interfaceType: String = "Ethernet",
+        interfaceType: DeviceInfo.InterfaceType = .ethernet,
         active: Bool = true
     ) -> DeviceInfo {
         DeviceInfo(

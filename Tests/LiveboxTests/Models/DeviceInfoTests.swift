@@ -29,7 +29,7 @@ struct DeviceInfoTests {
         #expect(device.ipV6Address == "2001:db8::1")
         #expect(device.hostName == "MyDevice")
         #expect(device.alias == "Living Room TV")
-        #expect(device.interfaceType == "Ethernet")
+        #expect(device.interfaceType == .ethernet)
         #expect(device.active == true)
     }
 
@@ -57,7 +57,7 @@ struct DeviceInfoTests {
         #expect(device.ipV6Address == "")
         #expect(device.hostName == "")
         #expect(device.alias == "")
-        #expect(device.interfaceType == "WiFi")
+        #expect(device.interfaceType == .wifi)
         #expect(device.active == false)
     }
 
@@ -98,7 +98,7 @@ struct DeviceInfoTests {
         #expect(devices[0].ipAddress == "192.168.1.100")
         #expect(devices[0].hostName == "Device1")
         #expect(devices[0].alias == "Smart TV")
-        #expect(devices[0].interfaceType == "Ethernet")
+        #expect(devices[0].interfaceType == .ethernet)
         #expect(devices[0].active == true)
 
         // Second device
@@ -106,7 +106,7 @@ struct DeviceInfoTests {
         #expect(devices[1].ipAddress == "192.168.1.101")
         #expect(devices[1].hostName == "Device2")
         #expect(devices[1].alias == "iPhone")
-        #expect(devices[1].interfaceType == "WiFi")
+        #expect(devices[1].interfaceType == .wifi)
         #expect(devices[1].active == false)
     }
 
@@ -134,7 +134,7 @@ struct DeviceInfoTests {
         #expect(device.ipV6Address == "fe80::1")
         #expect(device.hostName == "iPhone-John")
         #expect(device.alias == "John's Phone")
-        #expect(device.interfaceType == "WiFi")
+        #expect(device.interfaceType == .wifi)
         #expect(device.active == true)
     }
 
@@ -146,7 +146,7 @@ struct DeviceInfoTests {
             ipV6Address: "2001:db8::1",
             hostName: "TestDevice",
             alias: "Test Device",
-            interfaceType: "Ethernet",
+            interfaceType: .ethernet,
             active: true
         )
 
@@ -187,7 +187,7 @@ struct DeviceInfoTests {
         #expect(device.ipV6Address == "")
         #expect(device.hostName == "")
         #expect(device.alias == "")
-        #expect(device.interfaceType == "")
+        #expect(device.interfaceType == .unknown)
         #expect(device.active == false)
     }
 
@@ -215,7 +215,7 @@ struct DeviceInfoTests {
         #expect(device.ipV6Address == "2001:db8::150")
         #expect(device.hostName == "Device-With_Special.Characters")
         #expect(device.alias == "Café's Smart TV (Living Room)")
-        #expect(device.interfaceType == "Ethernet/WiFi")
+        #expect(device.interfaceType == .unknown)
         #expect(device.active == true)
     }
 }
