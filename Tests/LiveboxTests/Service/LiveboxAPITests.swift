@@ -470,7 +470,7 @@ struct LiveboxAPITests {
                 ipAddress: "192.168.1.100",
                 hostName: "Device1",
                 alias: "Smart TV",
-                interfaceType: "Ethernet",
+                interfaceType: .ethernet,
                 active: true
             ),
             TestHelpers.createTestDevice(
@@ -478,7 +478,7 @@ struct LiveboxAPITests {
                 ipAddress: "192.168.1.101",
                 hostName: "Device2",
                 alias: "iPhone",
-                interfaceType: "WiFi",
+                interfaceType: .wifi,
                 active: false
             ),
         ]
@@ -500,7 +500,7 @@ struct LiveboxAPITests {
             #expect(devices[0].ipAddress == "192.168.1.100")
             #expect(devices[0].hostName == "Device1")
             #expect(devices[0].alias == "Smart TV")
-            #expect(devices[0].interfaceType == "Ethernet")
+            #expect(devices[0].interfaceType == .ethernet)
             #expect(devices[0].active == true)
 
             // Second device
@@ -508,7 +508,7 @@ struct LiveboxAPITests {
             #expect(devices[1].ipAddress == "192.168.1.101")
             #expect(devices[1].hostName == "Device2")
             #expect(devices[1].alias == "iPhone")
-            #expect(devices[1].interfaceType == "WiFi")
+            #expect(devices[1].interfaceType == .wifi)
             #expect(devices[1].active == false)
 
         case .failure(let error):
@@ -573,7 +573,7 @@ struct LiveboxAPITests {
                 ipAddress: "192.168.1.100",
                 hostName: "EthernetDevice",
                 alias: "Desktop PC",
-                interfaceType: "Ethernet",
+                interfaceType: .ethernet,
                 active: true
             ),
             TestHelpers.createTestDevice(
@@ -581,15 +581,15 @@ struct LiveboxAPITests {
                 ipAddress: "192.168.1.101",
                 hostName: "WiFiDevice",
                 alias: "Smartphone",
-                interfaceType: "WiFi",
+                interfaceType: .wifi,
                 active: true
             ),
             TestHelpers.createTestDevice(
                 physAddress: "77:88:99:AA:BB:CC",
                 ipAddress: "192.168.1.102",
-                hostName: "PowerlineDevice",
+                hostName: "WiFi5Device",
                 alias: "Smart TV",
-                interfaceType: "Powerline",
+                interfaceType: .wifi50,
                 active: false
             ),
         ]
@@ -608,9 +608,9 @@ struct LiveboxAPITests {
 
             // Verify different interface types
             let interfaceTypes = Set(devices.map { $0.interfaceType })
-            #expect(interfaceTypes.contains("Ethernet"))
-            #expect(interfaceTypes.contains("WiFi"))
-            #expect(interfaceTypes.contains("Powerline"))
+            #expect(interfaceTypes.contains(.ethernet))
+            #expect(interfaceTypes.contains(.wifi))
+            #expect(interfaceTypes.contains(.wifi50))
 
         case .failure(let error):
             Issue.record("Expected success but got error: \(error)")
