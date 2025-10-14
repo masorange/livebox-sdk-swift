@@ -274,7 +274,7 @@ struct LiveboxAPIAsyncTests {
     func testChangeDeviceScheduleStatusAsyncSuccess() async throws {
         // Given
         let mac = "AA:BB:CC:DD:EE:FF"
-        let status = ScheduleStatus(mac: mac, status: .enabled)
+        let status = DeviceScheduleStatus(mac: mac, status: .enabled)
         mockClient.mockResponses[FeatureID.pcDevicesMac.id] = ()
 
         // When
@@ -290,7 +290,7 @@ struct LiveboxAPIAsyncTests {
     func testChangeDeviceScheduleStatusAsyncFailure() async throws {
         // Given
         let mac = "AA:BB:CC:DD:EE:FF"
-        let status = ScheduleStatus(mac: mac, status: .disabled)
+        let status = DeviceScheduleStatus(mac: mac, status: .disabled)
         mockClient.mockErrors["PcDevicesMac"] = LiveboxError.featureNotFound("PcDevicesMac")
 
         // When/Then
@@ -440,6 +440,77 @@ struct LiveboxAPIAsyncTests {
             Issue.record("Expected failure but got success")
         } catch .featureNotFound(let message) {
             #expect(message == "ConnectedDevices")
+        }
+    }
+
+    @Test("Get WLAN schedule status async success")
+    func testGetWlanScheduleStatusAsyncSuccess() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        let expectedStatus = WlanScheduleStatus(isEnabled: true)
+        mockClient.mockResponses[FeatureID.wlanScheduleEnable.id] = expectedStatus
+
+        // When
+        let status = try await service.getWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp)
+
+        // Then
+        #expect(status.isEnabled == true)
+        let lastRequest = mockClient.requestLog.last
+        #expect(lastRequest?.endpoint.contains("WlanScheduleEnable") == true)
+        #expect(lastRequest?.endpoint.contains(wlanIfc) == true)
+        #expect(lastRequest?.endpoint.contains(wlanAp) == true)
+    }
+
+    @Test("Get WLAN schedule status async failure")
+    func testGetWlanScheduleStatusAsyncFailure() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        mockClient.mockErrors["WlanScheduleEnable"] = LiveboxError.featureNotFound("WlanScheduleEnable")
+
+        // When/Then
+        do {
+            _ = try await service.getWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp)
+            Issue.record("Expected failure but got success")
+        } catch .featureNotFound(let message) {
+            #expect(message == "WlanScheduleEnable")
+        }
+    }
+
+    @Test("Change WLAN schedule status async success")
+    func testChangeWlanScheduleStatusAsyncSuccess() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        let status = WlanScheduleStatus(isEnabled: false)
+        mockClient.mockResponses[FeatureID.wlanScheduleEnable.id] = ()
+
+        // When
+        try await service.changeWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp, status: status)
+
+        // Then
+        let lastRequest = mockClient.requestLog.last
+        #expect(lastRequest?.endpoint.contains("WlanScheduleEnable") == true)
+        #expect(lastRequest?.endpoint.contains(wlanIfc) == true)
+        #expect(lastRequest?.endpoint.contains(wlanAp) == true)
+        #expect(lastRequest?.method == .put)
+    }
+
+    @Test("Change WLAN schedule status async failure")
+    func testChangeWlanScheduleStatusAsyncFailure() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        let status = WlanScheduleStatus(isEnabled: true)
+        mockClient.mockErrors["WlanScheduleEnable"] = LiveboxError.featureNotFound("WlanScheduleEnable")
+
+        // When/Then
+        do {
+            try await service.changeWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp, status: status)
+            Issue.record("Expected failure but got success")
+        } catch .featureNotFound(let message) {
+            #expect(message == "WlanScheduleEnable")
         }
     }
 }

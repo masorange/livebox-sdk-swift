@@ -993,7 +993,7 @@ struct LiveboxAPITests {
     func testChangeDeviceScheduleStatusSuccess() async throws {
         // Given
         let mac = "AA:BB:CC:DD:EE:FF"
-        let status = ScheduleStatus(mac: mac, status: .enabled)
+        let status = DeviceScheduleStatus(mac: mac, status: .enabled)
         mockClient.mockResponses[FeatureID.pcDevicesMac.id] = ()
 
         // When
@@ -1019,7 +1019,7 @@ struct LiveboxAPITests {
     func testChangeDeviceScheduleStatusFailure() async throws {
         // Given
         let mac = "AA:BB:CC:DD:EE:FF"
-        let status = ScheduleStatus(mac: mac, status: .disabled)
+        let status = DeviceScheduleStatus(mac: mac, status: .disabled)
         mockClient.mockErrors["PcDevicesMac"] = LiveboxError.featureNotFound("PcDevicesMac")
 
         // When
@@ -1326,6 +1326,91 @@ struct LiveboxAPITests {
         #expect(service.isAuthenticated == true)
         #expect(service.currentUsername == "UsrAdmin")
         #expect(service.baseURL == newURL)
+    }
+
+    @Test("Get WLAN schedule status succeeds")
+    func testGetWlanScheduleStatusSuccess() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        let expectedStatus = WlanScheduleStatus(isEnabled: true)
+        mockClient.mockResponses[FeatureID.wlanScheduleEnable.id] = expectedStatus
+
+        // When
+        let status: WlanScheduleStatus = try await withCheckedThrowingContinuation { continuation in
+            service.getWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp) { result in
+                continuation.resume(with: result)
+            }
+        }
+
+        // Then
+        #expect(status.isEnabled == true)
+        let lastRequest = mockClient.requestLog.last
+        #expect(lastRequest?.endpoint.contains("WlanScheduleEnable") == true)
+        #expect(lastRequest?.endpoint.contains(wlanIfc) == true)
+        #expect(lastRequest?.endpoint.contains(wlanAp) == true)
+    }
+
+    @Test("Get WLAN schedule status fails")
+    func testGetWlanScheduleStatusFailure() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        mockClient.mockErrors["WlanScheduleEnable"] = LiveboxError.featureNotFound("WlanScheduleEnable")
+
+        // When/Then
+        let result: Result<WlanScheduleStatus, LiveboxError> = await withCheckedContinuation { continuation in
+            service.getWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp) { result in
+                continuation.resume(returning: result)
+            }
+        }
+
+        #expect(throws: LiveboxError.self) {
+            try result.get()
+        }
+    }
+
+    @Test("Change WLAN schedule status succeeds")
+    func testChangeWlanScheduleStatusSuccess() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        let status = WlanScheduleStatus(isEnabled: false)
+        mockClient.mockResponses[FeatureID.wlanScheduleEnable.id] = ()
+
+        // When
+        try await withCheckedThrowingContinuation { continuation in
+            service.changeWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp, status: status) { result in
+                continuation.resume(with: result)
+            }
+        }
+
+        // Then
+        let lastRequest = mockClient.requestLog.last
+        #expect(lastRequest?.endpoint.contains("WlanScheduleEnable") == true)
+        #expect(lastRequest?.endpoint.contains(wlanIfc) == true)
+        #expect(lastRequest?.endpoint.contains(wlanAp) == true)
+        #expect(lastRequest?.method == .put)
+    }
+
+    @Test("Change WLAN schedule status fails")
+    func testChangeWlanScheduleStatusFailure() async throws {
+        // Given
+        let wlanIfc = "wl0"
+        let wlanAp = "ap0"
+        let status = WlanScheduleStatus(isEnabled: true)
+        mockClient.mockErrors["WlanScheduleEnable"] = LiveboxError.featureNotFound("WlanScheduleEnable")
+
+        // When/Then
+        let result: Result<Void, LiveboxError> = await withCheckedContinuation { continuation in
+            service.changeWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp, status: status) { result in
+                continuation.resume(returning: result)
+            }
+        }
+
+        #expect(throws: LiveboxError.self) {
+            try result.get()
+        }
     }
 }
 

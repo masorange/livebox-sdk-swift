@@ -77,7 +77,7 @@ import Foundation
 ///
 /// - `GeneralInfo`: Information about the router device
 /// - `Capabilities`: Router API capabilities and features
-public struct Livebox {
+public struct LiveboxInfo {
     /// The current version of the Livebox package.
-    public static let version = "1.0.0"
+    public static let version = "1.2.0"
 }

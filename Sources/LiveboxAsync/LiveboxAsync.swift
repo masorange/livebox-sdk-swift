@@ -47,7 +47,7 @@ import Livebox
 /// the flexibility to choose between callback-based and async/await patterns based on their needs.
 public struct LiveboxAsync {
     /// The current version of the LiveboxAsync package.
-    public static let version = Livebox.version
+    public static let version = LiveboxInfo.version
 
     private init() {}
 }
