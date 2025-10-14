@@ -484,7 +484,7 @@ public class LiveboxAPI {
         )
     }
 
-    /// Retrieves the router's schedule.
+    /// Retrieves the router's WLAN schedule status (enable/disable state).
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
