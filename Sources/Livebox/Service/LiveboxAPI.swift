@@ -458,7 +458,7 @@ public class LiveboxAPI {
         )
     }
 
-    /// Deletes the router's schedule.
+    /// Deletes the specified schedules.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
