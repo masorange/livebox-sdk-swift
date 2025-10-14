@@ -247,6 +247,9 @@ extension LiveboxAPI {
     }
 
     /// Deletes the schedules of a specific device.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
     /// - Parameters:
     ///   - mac: The MAC of the device.
     ///   - schedules: The schedules to delete.
@@ -255,6 +258,103 @@ extension LiveboxAPI {
         try await withErrorType(LiveboxError.self) {
             try await withCheckedThrowingContinuation { continuation in
                 deleteDeviceSchedules(mac: mac, schedules: schedules) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+    }
+
+    /// Retrieves the schedules from the router.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The ID of the access point.
+    /// - Returns: The schedules of the WLAN access point.
+    /// - Throws: An error if the request fails.
+    public func getWlanSchedules(wlanIfc: String, wlanAp: String) async throws(LiveboxError) -> Schedules {
+        try await withErrorType(LiveboxError.self) {
+            try await withCheckedThrowingContinuation { continuation in
+                getWlanSchedules(wlanIfc: wlanIfc, wlanAp: wlanAp) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+    }
+
+    /// Adds schedules to the router.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The ID of the access point.
+    ///   - schedules: The schedules to add.
+    /// - Returns: The updated schedules of the WLAN access point.
+    /// - Throws: An error if the request fails.
+    public func addWlanSchedules(wlanIfc: String, wlanAp: String, schedules: Schedules) async throws(LiveboxError) -> Schedules {
+        try await withErrorType(LiveboxError.self) {
+            try await withCheckedThrowingContinuation { continuation in
+                addWlanSchedules(wlanIfc: wlanIfc, wlanAp: wlanAp, schedules: schedules) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+    }
+
+    /// Deletes the router's schedule.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The ID of the access point.
+    ///   - schedules: The schedules to delete.
+    /// - Returns: The updated schedules of the WLAN access point.
+    /// - Throws: An error if the request fails.
+    public func deleteWlanSchedules(wlanIfc: String, wlanAp: String, schedules: Schedules) async throws(LiveboxError) -> Schedules {
+        try await withErrorType(LiveboxError.self) {
+            try await withCheckedThrowingContinuation { continuation in
+                deleteWlanSchedules(wlanIfc: wlanIfc, wlanAp: wlanAp, schedules: schedules) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+    }
+
+    /// Retrieves the router's schedule.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The ID of the access point.
+    /// - Returns: The schedule status of the WLAN access point.
+    /// - Throws: An error if the request fails.
+    public func getWlanScheduleStatus(wlanIfc: String, wlanAp: String) async throws(LiveboxError) -> WlanScheduleStatus {
+        try await withErrorType(LiveboxError.self) {
+            try await withCheckedThrowingContinuation { continuation in
+                getWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+    }
+
+    /// Changes the router's schedule status.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The ID of the access point.
+    ///   - status: The new schedule status to set.
+    /// - Throws: An error if the request fails.
+    public func changeWlanScheduleStatus(wlanIfc: String, wlanAp: String, status: WlanScheduleStatus) async throws(LiveboxError) {
+        try await withErrorType(LiveboxError.self) {
+            try await withCheckedThrowingContinuation { continuation in
+                changeWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp, status: status) { result in
                     continuation.resume(with: result)
                 }
             }

@@ -408,4 +408,134 @@ public class LiveboxAPI {
             completion: completion
         )
     }
+
+    /// Retrieves the schedules from the router.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The MAC of the access point.
+    ///   - completion: A callback to invoke with the result.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    @discardableResult
+    public func getWlanSchedules(
+        wlanIfc: String,
+        wlanAp: String,
+        completion: @escaping (Result<Schedules, LiveboxError>) -> Void
+    ) -> URLSessionDataTask? {
+        client.requestFeature(
+            id: .wlanSchedule,
+            pathVariables: ["wlan_ifc": wlanIfc, "wlan_ap": wlanAp.removingColons],
+            method: .get,
+            completion: completion
+        )
+    }
+
+    /// Adds schedules to the router.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The MAC of the access point.
+    ///   - schedules: The schedules to add.
+    ///   - completion: A callback to invoke with the result.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    @discardableResult
+    public func addWlanSchedules(
+        wlanIfc: String,
+        wlanAp: String,
+        schedules: Schedules,
+        completion: @escaping (Result<Schedules, LiveboxError>) -> Void
+    ) -> URLSessionDataTask? {
+        client.requestFeature(
+            id: .wlanSchedule,
+            pathVariables: ["wlan_ifc": wlanIfc, "wlan_ap": wlanAp.removingColons],
+            method: .post,
+            body: schedules,
+            completion: completion
+        )
+    }
+
+    /// Deletes the router's schedule.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The MAC of the access point.
+    ///   - schedules: The schedules to delete.
+    ///   - completion: A callback to invoke with the result.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    @discardableResult
+    public func deleteWlanSchedules(
+        wlanIfc: String,
+        wlanAp: String,
+        schedules: Schedules,
+        completion: @escaping (Result<Schedules, LiveboxError>) -> Void
+    ) -> URLSessionDataTask? {
+        client.requestFeature(
+            id: .wlanSchedule,
+            pathVariables: ["wlan_ifc": wlanIfc, "wlan_ap": wlanAp.removingColons],
+            method: .delete,
+            body: schedules,
+            completion: completion
+        )
+    }
+
+    /// Retrieves the router's schedule.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The MAC of the access point.
+    ///   - completion: A callback to invoke with the result.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    @discardableResult
+    public func getWlanScheduleStatus(
+        wlanIfc: String,
+        wlanAp: String,
+        completion: @escaping (Result<WlanScheduleStatus, LiveboxError>) -> Void
+    ) -> URLSessionDataTask? {
+        client.requestFeature(
+            id: .wlanScheduleEnable,
+            pathVariables: ["wlan_ifc": wlanIfc, "wlan_ap": wlanAp.removingColons],
+            method: .get,
+            completion: completion
+        )
+    }
+
+    /// Changes the router's schedule status.
+    ///
+    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
+    ///
+    /// - Parameters:
+    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanAp: The MAC of the access point.
+    ///   - status: The status to set.
+    ///   - completion: A callback to invoke with the result.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    @discardableResult
+    public func changeWlanScheduleStatus(
+        wlanIfc: String,
+        wlanAp: String,
+        status: WlanScheduleStatus,
+        completion: @escaping (Result<Void, LiveboxError>) -> Void
+    ) -> URLSessionDataTask? {
+        client.requestFeature(
+            id: .wlanScheduleEnable,
+            pathVariables: ["wlan_ifc": wlanIfc, "wlan_ap": wlanAp.removingColons],
+            method: .put,
+            body: status
+        ) { (result: Result<EmptyResponse, LiveboxError>) in
+            switch result {
+            case .success:
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
 }
