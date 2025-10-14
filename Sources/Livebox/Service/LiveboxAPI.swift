@@ -372,7 +372,7 @@ public class LiveboxAPI {
     @discardableResult
     public func changeDeviceScheduleStatus(
         mac: String,
-        status: ScheduleStatus,
+        status: DeviceScheduleStatus,
         completion: @escaping (Result<Void, LiveboxError>) -> Void
     ) -> URLSessionDataTask? {
         client.requestFeature(

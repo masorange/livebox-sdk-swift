@@ -1,4 +1,4 @@
-public struct ScheduleStatus: Codable {
+public struct DeviceScheduleStatus: Codable {
     public let mac: String
     public let status: Status
 
@@ -13,7 +13,7 @@ public struct ScheduleStatus: Codable {
     }
 }
 
-extension ScheduleStatus {
+extension DeviceScheduleStatus {
     public enum Status: String, Codable {
         case enabled = "Enabled"
         case disabled = "Disabled"

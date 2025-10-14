@@ -236,7 +236,7 @@ extension LiveboxAPI {
     /// - Parameters:
     ///   - mac: The MAC of the device.
     ///   - status: The status to set.
-    public func changeDeviceScheduleStatus(mac: String, status: ScheduleStatus) async throws(LiveboxError) {
+    public func changeDeviceScheduleStatus(mac: String, status: DeviceScheduleStatus) async throws(LiveboxError) {
         try await withErrorType(LiveboxError.self) {
             try await withCheckedThrowingContinuation { continuation in
                 changeDeviceScheduleStatus(mac: mac, status: status) { result in

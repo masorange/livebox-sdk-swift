@@ -274,7 +274,7 @@ struct LiveboxAPIAsyncTests {
     func testChangeDeviceScheduleStatusAsyncSuccess() async throws {
         // Given
         let mac = "AA:BB:CC:DD:EE:FF"
-        let status = ScheduleStatus(mac: mac, status: .enabled)
+        let status = DeviceScheduleStatus(mac: mac, status: .enabled)
         mockClient.mockResponses[FeatureID.pcDevicesMac.id] = ()
 
         // When
@@ -290,7 +290,7 @@ struct LiveboxAPIAsyncTests {
     func testChangeDeviceScheduleStatusAsyncFailure() async throws {
         // Given
         let mac = "AA:BB:CC:DD:EE:FF"
-        let status = ScheduleStatus(mac: mac, status: .disabled)
+        let status = DeviceScheduleStatus(mac: mac, status: .disabled)
         mockClient.mockErrors["PcDevicesMac"] = LiveboxError.featureNotFound("PcDevicesMac")
 
         // When/Then
