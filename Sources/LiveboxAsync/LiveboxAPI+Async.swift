@@ -267,7 +267,7 @@ extension LiveboxAPI {
     ///
     /// - Parameters:
     ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The ID of the access point.
+    ///   - wlanAp: The MAC of the access point.
     /// - Returns: The schedules of the WLAN access point.
     /// - Throws: An error if the request fails.
     public func getWlanSchedules(wlanIfc: String, wlanAp: String) async throws(LiveboxError) -> Schedules {
@@ -286,7 +286,7 @@ extension LiveboxAPI {
     ///
     /// - Parameters:
     ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The ID of the access point.
+    ///   - wlanAp: The MAC of the access point.
     ///   - schedules: The schedules to add.
     /// - Returns: The updated schedules of the WLAN access point.
     /// - Throws: An error if the request fails.
@@ -306,7 +306,7 @@ extension LiveboxAPI {
     ///
     /// - Parameters:
     ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The ID of the access point.
+    ///   - wlanAp: The MAC of the access point.
     ///   - schedules: The schedules to delete.
     /// - Returns: The updated schedules of the WLAN access point.
     /// - Throws: An error if the request fails.
@@ -326,7 +326,7 @@ extension LiveboxAPI {
     ///
     /// - Parameters:
     ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The ID of the access point.
+    ///   - wlanAp: The MAC of the access point.
     /// - Returns: The schedule status of the WLAN access point.
     /// - Throws: An error if the request fails.
     public func getWlanScheduleStatus(wlanIfc: String, wlanAp: String) async throws(LiveboxError) -> WlanScheduleStatus {
@@ -345,7 +345,7 @@ extension LiveboxAPI {
     ///
     /// - Parameters:
     ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The ID of the access point.
+    ///   - wlanAp: The MAC of the access point.
     ///   - status: The new schedule status to set.
     /// - Throws: An error if the request fails.
     public func changeWlanScheduleStatus(wlanIfc: String, wlanAp: String, status: WlanScheduleStatus) async throws(LiveboxError) {
