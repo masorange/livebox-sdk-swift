@@ -247,9 +247,6 @@ extension LiveboxAPI {
     }
 
     /// Deletes the schedules of a specific device.
-    ///
-    /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
-    ///
     /// - Parameters:
     ///   - mac: The MAC of the device.
     ///   - schedules: The schedules to delete.
