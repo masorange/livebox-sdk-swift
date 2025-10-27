@@ -23,8 +23,8 @@ class DefaultLiveboxClient: LiveboxClient {
         let sessionConfig = URLSessionConfiguration.default
         sessionConfig.timeoutIntervalForRequest = configuration.timeout
         sessionConfig.timeoutIntervalForResource = configuration.timeout
-        sessionConfig.httpAdditionalHeaders = configuration.defaultHeaders.merging(["Accept": "application/json"]) { _, new in
-            new
+        sessionConfig.httpAdditionalHeaders = ["Accept": "application/json"].merging(configuration.defaultHeaders) { current, _ in
+            current
         }
 
         self.session = URLSession(configuration: sessionConfig)
