@@ -7,7 +7,7 @@ class DefaultLiveboxClient: LiveboxClient {
     var configuration: LiveboxClientConfiguration
 
     /// The URL session used for making network requests.
-    private let session: URLSession
+    internal let session: URLSession
 
     /// The capabilities of the router.
     private var capabilities: Capabilities?
@@ -23,6 +23,10 @@ class DefaultLiveboxClient: LiveboxClient {
         let sessionConfig = URLSessionConfiguration.default
         sessionConfig.timeoutIntervalForRequest = configuration.timeout
         sessionConfig.timeoutIntervalForResource = configuration.timeout
+        sessionConfig.httpAdditionalHeaders = configuration.defaultHeaders.merging(["Accept": "application/json"]) { _, new in
+            new
+        }
+
         self.session = URLSession(configuration: sessionConfig)
     }
 
