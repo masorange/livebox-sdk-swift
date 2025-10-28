@@ -179,9 +179,11 @@ extension AccessPoint {
     public enum BandwidthConf: RawRepresentable, Codable {
         case auto
         case _20mhz
-        case _20_40mhz
+        case _40mhz
         case _80mhz
         case _160mhz
+        case _20_40mhz
+        case _80_40_20mhz
         case unknown(String)
 
         public init?(rawValue: String) {
@@ -190,12 +192,16 @@ extension AccessPoint {
                 self = .auto
             case "20mhz":
                 self = ._20mhz
-            case "20/40mhz":
-                self = ._20_40mhz
+            case "40mhz":
+                self = ._40mhz
             case "80mhz":
                 self = ._80mhz
             case "160mhz":
                 self = ._160mhz
+            case "20/40mhz":
+                self = ._20_40mhz
+            case "80/40/20mhz":
+                self = ._80_40_20mhz
             default:
                 self = .unknown(rawValue)
             }
@@ -207,12 +213,16 @@ extension AccessPoint {
                 return "Auto"
             case ._20mhz:
                 return "20MHz"
-            case ._20_40mhz:
-                return "20/40MHz"
+            case ._40mhz:
+                return "40MHz"
             case ._80mhz:
                 return "80MHz"
             case ._160mhz:
                 return "160MHz"
+            case ._20_40mhz:
+                return "20/40MHz"
+            case ._80_40_20mhz:
+                return "80/40/20MHz"
             case .unknown(let value):
                 return value
             }

@@ -238,6 +238,186 @@ struct AccessPointTests {
         #expect(encodedJson["Mode"] as? String == "11ng")
     }
 
+    @Test("BandwidthConf enum cases")
+    func testBandwidthConfEnum() {
+        // Test creation from raw values (case-insensitive)
+        // Note: init never returns nil, uses .unknown for unrecognized values
+        #expect(AccessPoint.BandwidthConf(rawValue: "Auto")! == .auto)
+        #expect(AccessPoint.BandwidthConf(rawValue: "auto")! == .auto)
+        #expect(AccessPoint.BandwidthConf(rawValue: "AUTO")! == .auto)
+
+        #expect(AccessPoint.BandwidthConf(rawValue: "20MHz")! == ._20mhz)
+        #expect(AccessPoint.BandwidthConf(rawValue: "20mhz")! == ._20mhz)
+
+        #expect(AccessPoint.BandwidthConf(rawValue: "40MHz")! == ._40mhz)
+        #expect(AccessPoint.BandwidthConf(rawValue: "40mhz")! == ._40mhz)
+
+        #expect(AccessPoint.BandwidthConf(rawValue: "80MHz")! == ._80mhz)
+        #expect(AccessPoint.BandwidthConf(rawValue: "80mhz")! == ._80mhz)
+
+        #expect(AccessPoint.BandwidthConf(rawValue: "160MHz")! == ._160mhz)
+        #expect(AccessPoint.BandwidthConf(rawValue: "160mhz")! == ._160mhz)
+
+        #expect(AccessPoint.BandwidthConf(rawValue: "20/40MHz")! == ._20_40mhz)
+        #expect(AccessPoint.BandwidthConf(rawValue: "20/40mhz")! == ._20_40mhz)
+
+        #expect(AccessPoint.BandwidthConf(rawValue: "80/40/20MHz")! == ._80_40_20mhz)
+        #expect(AccessPoint.BandwidthConf(rawValue: "80/40/20mhz")! == ._80_40_20mhz)
+
+        // Test unknown values
+        let unknown = AccessPoint.BandwidthConf(rawValue: "UnknownValue")!
+        if case .unknown(let value) = unknown {
+            #expect(value == "UnknownValue")
+        } else {
+            #expect(Bool(false), "Should create unknown case")
+        }
+
+        // Test raw values (proper capitalization)
+        #expect(AccessPoint.BandwidthConf.auto.rawValue == "Auto")
+        #expect(AccessPoint.BandwidthConf._20mhz.rawValue == "20MHz")
+        #expect(AccessPoint.BandwidthConf._40mhz.rawValue == "40MHz")
+        #expect(AccessPoint.BandwidthConf._80mhz.rawValue == "80MHz")
+        #expect(AccessPoint.BandwidthConf._160mhz.rawValue == "160MHz")
+        #expect(AccessPoint.BandwidthConf._20_40mhz.rawValue == "20/40MHz")
+        #expect(AccessPoint.BandwidthConf._80_40_20mhz.rawValue == "80/40/20MHz")
+
+        // Test unknown case raw value
+        let unknownCase = AccessPoint.BandwidthConf.unknown("CustomValue")
+        #expect(unknownCase.rawValue == "CustomValue")
+    }
+
+    @Test("BandwidthConf decoding with various formats")
+    func testBandwidthConfDecoding() throws {
+        // Test decoding with lowercase
+        let json1 = """
+            {
+                "idx": "TEST",
+                "BSSID": "8C:19:B5:F8:ED:A7",
+                "Type": "Home",
+                "Manner": "Combined",
+                "Status": "Up",
+                "SSID": "Test",
+                "Password": "pass",
+                "ChannelConf": "Auto",
+                "Channel": 6,
+                "BandwithConf": "40mhz",
+                "Bandwith": "40MHz",
+                "SchedulingAllowed": true
+            }
+            """
+        let data1 = json1.data(using: .utf8)!
+        let ap1 = try JSONDecoder().decode(AccessPoint.self, from: data1)
+        #expect(ap1.bandwidthConf == ._40mhz)
+
+        // Test decoding with uppercase
+        let json2 = """
+            {
+                "idx": "TEST",
+                "BSSID": "8C:19:B5:F8:ED:A7",
+                "Type": "Home",
+                "Manner": "Combined",
+                "Status": "Up",
+                "SSID": "Test",
+                "Password": "pass",
+                "ChannelConf": "Auto",
+                "Channel": 6,
+                "BandwithConf": "AUTO",
+                "Bandwith": "Auto",
+                "SchedulingAllowed": true
+            }
+            """
+        let data2 = json2.data(using: .utf8)!
+        let ap2 = try JSONDecoder().decode(AccessPoint.self, from: data2)
+        #expect(ap2.bandwidthConf == .auto)
+
+        // Test decoding with unknown value
+        let json3 = """
+            {
+                "idx": "TEST",
+                "BSSID": "8C:19:B5:F8:ED:A7",
+                "Type": "Home",
+                "Manner": "Combined",
+                "Status": "Up",
+                "SSID": "Test",
+                "Password": "pass",
+                "ChannelConf": "Auto",
+                "Channel": 6,
+                "BandwithConf": "FutureValue",
+                "Bandwith": "FutureValue",
+                "SchedulingAllowed": true
+            }
+            """
+        let data3 = json3.data(using: .utf8)!
+        let ap3 = try JSONDecoder().decode(AccessPoint.self, from: data3)
+        if case .unknown(let value) = ap3.bandwidthConf {
+            #expect(value == "FutureValue")
+        } else {
+            #expect(Bool(false), "Should decode as unknown")
+        }
+    }
+
+    @Test("BandwidthConf encoding preserves proper format")
+    func testBandwidthConfEncoding() throws {
+        let accessPoint = AccessPoint(
+            bssid: "8C:19:B5:F8:ED:A7",
+            type: .home,
+            manner: .combined,
+            status: .up,
+            ssid: "Test",
+            password: "pass",
+            channelConf: .auto,
+            channel: 6,
+            bandwidthConf: ._80_40_20mhz,
+            bandwidth: "80/40/20MHz",
+            schedulingAllowed: true
+        )
+
+        let encoder = JSONEncoder()
+        let encodedData = try encoder.encode(accessPoint)
+        let encodedJson = try JSONSerialization.jsonObject(with: encodedData) as! [String: Any]
+
+        // Verify proper capitalization is maintained
+        #expect(encodedJson["BandwithConf"] as? String == "80/40/20MHz")
+    }
+
+    @Test("BandwidthConf all bandwidth options")
+    func testAllBandwidthOptions() throws {
+        let bandwidths: [(AccessPoint.BandwidthConf, String)] = [
+            (.auto, "Auto"),
+            (._20mhz, "20MHz"),
+            (._40mhz, "40MHz"),
+            (._80mhz, "80MHz"),
+            (._160mhz, "160MHz"),
+            (._20_40mhz, "20/40MHz"),
+            (._80_40_20mhz, "80/40/20MHz"),
+        ]
+
+        for (bandwidth, expectedRawValue) in bandwidths {
+            let accessPoint = AccessPoint(
+                bssid: "8C:19:B5:F8:ED:A7",
+                type: .home,
+                manner: .combined,
+                status: .up,
+                ssid: "Test",
+                password: "pass",
+                channelConf: .auto,
+                channel: 6,
+                bandwidthConf: bandwidth,
+                bandwidth: expectedRawValue,
+                schedulingAllowed: true
+            )
+
+            // Encode and verify
+            let encodedData = try JSONEncoder().encode(accessPoint)
+            let encodedJson = try JSONSerialization.jsonObject(with: encodedData) as! [String: Any]
+            #expect(encodedJson["BandwithConf"] as? String == expectedRawValue)
+
+            // Decode and verify round-trip
+            let decodedAccessPoint = try JSONDecoder().decode(AccessPoint.self, from: encodedData)
+            #expect(decodedAccessPoint.bandwidthConf == bandwidth)
+        }
+    }
+
     @Test("AccessPoint with minimal properties")
     func AccessPointMinimalProperties() throws {
         // Create a AccessPoint request with only required properties
