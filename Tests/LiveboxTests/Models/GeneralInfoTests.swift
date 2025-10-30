@@ -58,7 +58,6 @@ struct GeneralInfoTests {
         #expect(info.provisioningCode == nil)
         #expect(info.firstUseDate == nil)
         #expect(info.deviceLog == nil)
-        #expect(info.vendorConfigFileNumberOfEntries == nil)
         #expect(info.manufacturerURL == nil)
         #expect(info.country == nil)
         #expect(info.numberOfReboots == nil)
@@ -87,7 +86,6 @@ struct GeneralInfoTests {
             upTime: 76203,
             firstUseDate: nil,
             deviceLog: nil,
-            vendorConfigFileNumberOfEntries: nil,
             manufacturerURL: nil,
             country: nil,
             numberOfReboots: 1,
@@ -133,7 +131,6 @@ struct GeneralInfoTests {
         #expect(json["ProvisioningCode"] == nil)
         #expect(json["FirstUseDate"] == nil)
         #expect(json["DeviceLog"] == nil)
-        #expect(json["VendorConfigFileNumberOfEntries"] == nil)
         #expect(json["ManufacturerURL"] == nil)
         #expect(json["Country"] == nil)
     }

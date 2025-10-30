@@ -136,7 +136,6 @@ public enum TestHelpers {
             upTime: 12345,
             firstUseDate: "2023-01-01T00:00:00Z",
             deviceLog: "No errors",
-            vendorConfigFileNumberOfEntries: "0",
             manufacturerURL: "https://example.com",
             country: "US",
             numberOfReboots: 5,
