@@ -71,13 +71,11 @@ import Foundation
 /// LiveboxConfiguration.setLogger(MyCustomLogger())
 /// ```
 ///
-/// This module uses JSON encoder/decoder with PascalCase conversion to match the router API format.
-///
 /// ## Available Models
 ///
 /// - `GeneralInfo`: Information about the router device
 /// - `Capabilities`: Router API capabilities and features
 public struct LiveboxInfo {
     /// The current version of the Livebox package.
-    public static let version = "1.2.1"
+    public static let version = "1.3.0"
 }

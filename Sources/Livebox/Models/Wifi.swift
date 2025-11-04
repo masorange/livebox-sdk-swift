@@ -54,7 +54,18 @@ public struct Wifi: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        wifiStatusButton = try container.decodeIfPresent(Bool.self, forKey: .wifiStatusButton)
+        // Handle wifiStatusButton which can be either Bool or String ("true" / "false")
+        do {
+            if let boolValue = try container.decodeIfPresent(Bool.self, forKey: .wifiStatusButton) {
+                wifiStatusButton = boolValue
+            } else {
+                wifiStatusButton = nil
+            }
+        } catch DecodingError.typeMismatch {
+            let stringValue = try container.decode(String.self, forKey: .wifiStatusButton)
+            wifiStatusButton = stringValue.lowercased() == "true"
+        }
+
         id = try container.decodeIfPresent(String.self, forKey: .id) ?? ""
         status = try container.decodeIfPresent(Status.self, forKey: .status) ?? .unknown
         frequency = try container.decodeIfPresent(Frequency.self, forKey: .frequency) ?? .unknown

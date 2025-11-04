@@ -56,9 +56,6 @@ public struct GeneralInfo: Codable {
     /// Device log
     public let deviceLog: String?
 
-    /// Number of vendor config file entries
-    public let vendorConfigFileNumberOfEntries: String?
-
     /// Manufacturer URL
     public let manufacturerURL: String?
 
@@ -105,7 +102,6 @@ public struct GeneralInfo: Codable {
         case upTime = "UpTime"
         case firstUseDate = "FirstUseDate"
         case deviceLog = "DeviceLog"
-        case vendorConfigFileNumberOfEntries = "VendorConfigFileNumberOfEntries"
         case manufacturerURL = "ManufacturerURL"
         case country = "Country"
         case numberOfReboots = "NumberOfReboots"
@@ -136,7 +132,6 @@ public struct GeneralInfo: Codable {
         upTime: Int? = nil,
         firstUseDate: String? = nil,
         deviceLog: String? = nil,
-        vendorConfigFileNumberOfEntries: String? = nil,
         manufacturerURL: String? = nil,
         country: String? = nil,
         numberOfReboots: Int? = nil,
@@ -165,7 +160,6 @@ public struct GeneralInfo: Codable {
         self.upTime = upTime
         self.firstUseDate = firstUseDate
         self.deviceLog = deviceLog
-        self.vendorConfigFileNumberOfEntries = vendorConfigFileNumberOfEntries
         self.manufacturerURL = manufacturerURL
         self.country = country
         self.numberOfReboots = numberOfReboots

@@ -102,8 +102,8 @@ struct WifiTests {
         #expect(wifi.isWifiInterface)
     }
 
-    @Test("Decoding WiFi status button from JSON")
-    func testDecodingStatusButton() throws {
+    @Test("Decoding WiFi status button as Bool true from JSON")
+    func testDecodingStatusButtonBoolTrue() throws {
         let json = """
             {
                 "WiFiStatusButton": true
@@ -115,9 +115,131 @@ struct WifiTests {
         let decoder = JSONDecoder()
         let wifi = try decoder.decode(Wifi.self, from: jsonData)
 
+        #expect(wifi.wifiStatusButton == true)
         #expect(wifi.id == "")
         #expect(wifi.status == .unknown)
         #expect(wifi.frequency == .unknown)
+        #expect(!wifi.isWifiInterface)
+    }
+
+    @Test("Decoding WiFi status button as Bool false from JSON")
+    func testDecodingStatusButtonBoolFalse() throws {
+        let json = """
+            {
+                "WiFiStatusButton": false
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let wifi = try decoder.decode(Wifi.self, from: jsonData)
+
+        #expect(wifi.wifiStatusButton == false)
+        #expect(wifi.id == "")
+        #expect(wifi.status == .unknown)
+        #expect(wifi.frequency == .unknown)
+        #expect(!wifi.isWifiInterface)
+    }
+
+    @Test("Decoding WiFi status button as String 'true' from JSON")
+    func testDecodingStatusButtonStringTrue() throws {
+        let json = """
+            {
+                "WiFiStatusButton": "true"
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let wifi = try decoder.decode(Wifi.self, from: jsonData)
+
+        #expect(wifi.wifiStatusButton == true)
+        #expect(wifi.id == "")
+        #expect(wifi.status == .unknown)
+        #expect(wifi.frequency == .unknown)
+        #expect(!wifi.isWifiInterface)
+    }
+
+    @Test("Decoding WiFi status button as String 'false' from JSON")
+    func testDecodingStatusButtonStringFalse() throws {
+        let json = """
+            {
+                "WiFiStatusButton": "false"
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let wifi = try decoder.decode(Wifi.self, from: jsonData)
+
+        #expect(wifi.wifiStatusButton == false)
+        #expect(wifi.id == "")
+        #expect(wifi.status == .unknown)
+        #expect(wifi.frequency == .unknown)
+        #expect(!wifi.isWifiInterface)
+    }
+
+    @Test("Decoding WiFi status button as String with case variations")
+    func testDecodingStatusButtonStringCaseInsensitive() throws {
+        // Test uppercase "TRUE"
+        let json1 = """
+            {
+                "WiFiStatusButton": "TRUE"
+            }
+            """
+        let data1 = json1.data(using: .utf8)!
+        let wifi1 = try JSONDecoder().decode(Wifi.self, from: data1)
+        #expect(wifi1.wifiStatusButton == true)
+
+        // Test mixed case "True"
+        let json2 = """
+            {
+                "WiFiStatusButton": "True"
+            }
+            """
+        let data2 = json2.data(using: .utf8)!
+        let wifi2 = try JSONDecoder().decode(Wifi.self, from: data2)
+        #expect(wifi2.wifiStatusButton == true)
+
+        // Test uppercase "FALSE"
+        let json3 = """
+            {
+                "WiFiStatusButton": "FALSE"
+            }
+            """
+        let data3 = json3.data(using: .utf8)!
+        let wifi3 = try JSONDecoder().decode(Wifi.self, from: data3)
+        #expect(wifi3.wifiStatusButton == false)
+
+        // Test mixed case "False"
+        let json4 = """
+            {
+                "WiFiStatusButton": "False"
+            }
+            """
+        let data4 = json4.data(using: .utf8)!
+        let wifi4 = try JSONDecoder().decode(Wifi.self, from: data4)
+        #expect(wifi4.wifiStatusButton == false)
+    }
+
+    @Test("Decoding WiFi status button as invalid String value")
+    func testDecodingStatusButtonInvalidString() throws {
+        let json = """
+            {
+                "WiFiStatusButton": "invalid"
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let wifi = try decoder.decode(Wifi.self, from: jsonData)
+
+        // Invalid string values should decode as false (not "true")
+        #expect(wifi.wifiStatusButton == false)
         #expect(!wifi.isWifiInterface)
     }
 
@@ -204,5 +326,46 @@ struct WifiTests {
         #expect(encodedJson["Frequency"] as? String == "2.4GHz")
         // WiFiStatusButton should not be encoded since it's nil
         #expect(encodedJson["WiFiStatusButton"] == nil)
+    }
+
+    @Test("Encoding WiFi status button encodes as Bool")
+    func testEncodingStatusButton() throws {
+        // Decode from String "true"
+        let json = """
+            {
+                "WiFiStatusButton": "true"
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let wifi = try JSONDecoder().decode(Wifi.self, from: jsonData)
+
+        // Encode back - should encode as Bool, not String
+        let encodedData = try JSONEncoder().encode(wifi)
+        let encodedJson = try JSONSerialization.jsonObject(with: encodedData) as! [String: Any]
+
+        // The encoded value should be a Bool true, not a String "true"
+        #expect(encodedJson["WiFiStatusButton"] as? Bool == true)
+    }
+
+    @Test("Round-trip encoding preserves values from String input")
+    func testRoundTripEncodingFromString() throws {
+        // Start with String-based WiFiStatusButton
+        let json = """
+            {
+                "WiFiStatusButton": "false"
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let wifi1 = try JSONDecoder().decode(Wifi.self, from: jsonData)
+
+        // Encode and decode again
+        let encodedData = try JSONEncoder().encode(wifi1)
+        let wifi2 = try JSONDecoder().decode(Wifi.self, from: encodedData)
+
+        // Values should be preserved
+        #expect(wifi1.wifiStatusButton == wifi2.wifiStatusButton)
+        #expect(wifi2.wifiStatusButton == false)
     }
 }
