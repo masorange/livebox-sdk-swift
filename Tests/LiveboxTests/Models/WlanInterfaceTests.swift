@@ -189,6 +189,113 @@ struct WlanInterfaceTests {
         #expect(WlanInterface.Status(rawValue: "SomeOtherStatus") == .unknown)
     }
 
+    @Test("Decoding ShortAccessPoint without Idx field derives from BSSID")
+    func testDecodingShortAccessPointWithoutIdx() throws {
+        let json = """
+            {
+                "Id": "5GHz",
+                "Status": "Up",
+                "Frequency": "5GHz",
+                "AccessPoints": [{
+                    "BSSID": "8C:19:B5:F8:ED:A7",
+                    "Status": "Up",
+                    "SSID": "Livebox6-EDA9"
+                }]
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let wlanInterface = try decoder.decode(WlanInterface.self, from: jsonData)
+
+        #expect(wlanInterface.accessPoints.count == 1)
+        let accessPoint = wlanInterface.accessPoints[0]
+        // Idx should be derived from BSSID by removing colons
+        #expect(accessPoint.idx == "8C19B5F8EDA7")
+        #expect(accessPoint.bssid == "8C:19:B5:F8:ED:A7")
+        #expect(accessPoint.status == .up)
+        #expect(accessPoint.ssid == "Livebox6-EDA9")
+    }
+
+    @Test("Decoding ShortAccessPoint with Idx field uses provided value")
+    func testDecodingShortAccessPointWithIdx() throws {
+        let json = """
+            {
+                "Id": "5GHz",
+                "Status": "Up",
+                "Frequency": "5GHz",
+                "AccessPoints": [{
+                    "Idx": "CustomIndex123",
+                    "BSSID": "8C:19:B5:F8:ED:A7",
+                    "Status": "Up",
+                    "SSID": "Livebox6-EDA9"
+                }]
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let wlanInterface = try decoder.decode(WlanInterface.self, from: jsonData)
+
+        #expect(wlanInterface.accessPoints.count == 1)
+        let accessPoint = wlanInterface.accessPoints[0]
+        // Idx should use the provided value, not derive from BSSID
+        #expect(accessPoint.idx == "CustomIndex123")
+        #expect(accessPoint.bssid == "8C:19:B5:F8:ED:A7")
+        #expect(accessPoint.status == .up)
+        #expect(accessPoint.ssid == "Livebox6-EDA9")
+    }
+
+    @Test("Decoding multiple ShortAccessPoints with mixed Idx scenarios")
+    func testDecodingMixedIdxScenarios() throws {
+        let json = """
+            {
+                "Id": "5GHz",
+                "Status": "Up",
+                "Frequency": "5GHz",
+                "AccessPoints": [{
+                    "Idx": "ProvidedIndex",
+                    "BSSID": "8C:19:B5:F8:ED:A7",
+                    "Status": "Up",
+                    "SSID": "AP-With-Idx"
+                }, {
+                    "BSSID": "92:19:B5:F8:ED:A0",
+                    "Status": "Down",
+                    "SSID": "AP-Without-Idx"
+                }, {
+                    "Idx": "AnotherCustomIdx",
+                    "BSSID": "AA:BB:CC:DD:EE:FF",
+                    "Status": "Up",
+                    "SSID": "AP-Custom-Idx"
+                }]
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let wlanInterface = try decoder.decode(WlanInterface.self, from: jsonData)
+
+        #expect(wlanInterface.accessPoints.count == 3)
+
+        // First AP: has Idx provided
+        let firstAP = wlanInterface.accessPoints[0]
+        #expect(firstAP.idx == "ProvidedIndex")
+        #expect(firstAP.bssid == "8C:19:B5:F8:ED:A7")
+
+        // Second AP: Idx missing, should be derived from BSSID
+        let secondAP = wlanInterface.accessPoints[1]
+        #expect(secondAP.idx == "9219B5F8EDA0")
+        #expect(secondAP.bssid == "92:19:B5:F8:ED:A0")
+
+        // Third AP: has Idx provided
+        let thirdAP = wlanInterface.accessPoints[2]
+        #expect(thirdAP.idx == "AnotherCustomIdx")
+        #expect(thirdAP.bssid == "AA:BB:CC:DD:EE:FF")
+    }
+
     @Test("Encoding WlanInterface to JSON")
     func testEncoding() throws {
         let json = """
@@ -229,10 +336,45 @@ struct WlanInterfaceTests {
         #expect(accessPoints?.count == 1)
 
         if let firstAP = accessPoints?.first {
+            #expect(firstAP["Idx"] as? String == "8C19B5F8EDA7")
             #expect(firstAP["BSSID"] as? String == "8C:19:B5:F8:ED:A7")
             #expect(firstAP["Status"] as? String == "Up")
             #expect(firstAP["RemainingDuration"] as? Int == -1)
             #expect(firstAP["SSID"] as? String == "Livebox6-EDA9")
+        }
+    }
+
+    @Test("Encoding ShortAccessPoint preserves derived Idx")
+    func testEncodingShortAccessPointWithDerivedIdx() throws {
+        let json = """
+            {
+                "Id": "5GHz",
+                "Status": "Up",
+                "Frequency": "5GHz",
+                "AccessPoints": [{
+                    "BSSID": "AA:BB:CC:DD:EE:FF",
+                    "Status": "Up",
+                    "SSID": "TestNetwork"
+                }]
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let wlanInterface = try JSONDecoder().decode(WlanInterface.self, from: jsonData)
+
+        // Encode back to JSON
+        let encodedData = try JSONEncoder().encode(wlanInterface)
+        let encodedJson = try JSONSerialization.jsonObject(with: encodedData) as! [String: Any]
+
+        // Check that the derived Idx is present in encoded JSON
+        let accessPoints = encodedJson["AccessPoints"] as? [[String: Any]]
+        #expect(accessPoints?.count == 1)
+
+        if let firstAP = accessPoints?.first {
+            // The derived Idx (BSSID without colons) should be encoded
+            #expect(firstAP["Idx"] as? String == "AABBCCDDEEFF")
+            #expect(firstAP["BSSID"] as? String == "AA:BB:CC:DD:EE:FF")
+            #expect(firstAP["SSID"] as? String == "TestNetwork")
         }
     }
 }

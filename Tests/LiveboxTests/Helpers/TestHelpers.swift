@@ -31,6 +31,7 @@ public enum TestHelpers {
             lastChange: 1_234_567_890,
             accessPoints: [
                 .init(
+                    idx: "001122334455",
                     bssid: "00:11:22:33:44:55",
                     ssid: "TestWiFi",
                     status: .up,
