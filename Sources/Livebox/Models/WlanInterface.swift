@@ -61,10 +61,8 @@ extension WlanInterface.Status {
 
 extension WlanInterface {
     public struct ShortAccessPoint: Codable {
-        /// Index of the access point. Uses the BSSID without the colon separators.
-        public var idx: String {
-            bssid.removingColons
-        }
+        /// Index of the access point. If not provided during decoding, it is derived from the BSSID by removing colons
+        public let idx: String
 
         /// BSSID of the access point
         public let bssid: String
@@ -82,6 +80,7 @@ extension WlanInterface {
         public let remainingDuration: Int?
 
         enum CodingKeys: String, CodingKey {
+            case idx = "Idx"
             case bssid = "BSSID"
             case ssid = "SSID"
             case status = "Status"
@@ -89,15 +88,50 @@ extension WlanInterface {
         }
 
         public init(
+            idx: String,
             bssid: String,
             ssid: String,
             status: Status,
             remainingDuration: Int? = nil
         ) {
+            self.idx = idx
             self.bssid = bssid
             self.ssid = ssid
             self.status = status
             self.remainingDuration = remainingDuration
+        }
+
+        /// Convenience initializer for backward compatibility.
+        /// Derives idx from bssid by removing colons.
+        public init(
+            bssid: String,
+            ssid: String,
+            status: Status,
+            remainingDuration: Int? = nil
+        ) {
+            self.init(
+                idx: bssid.removingColons,
+                bssid: bssid,
+                ssid: ssid,
+                status: status,
+                remainingDuration: remainingDuration
+            )
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            bssid = try container.decode(String.self, forKey: .bssid)
+            ssid = try container.decode(String.self, forKey: .ssid)
+            status = try container.decode(Status.self, forKey: .status)
+            remainingDuration = try container.decodeIfPresent(Int.self, forKey: .remainingDuration)
+
+            if let idx = try container.decodeIfPresent(String.self, forKey: .idx) {
+                self.idx = idx
+            } else {
+                // If "Idx" is missing, derive it from BSSID by removing colons
+                self.idx = bssid.removingColons
+            }
         }
     }
 }
