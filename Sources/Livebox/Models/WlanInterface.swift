@@ -61,7 +61,7 @@ extension WlanInterface.Status {
 
 extension WlanInterface {
     public struct ShortAccessPoint: Codable {
-        /// Index of the access point
+        /// Index of the access point. If not provided during decoding, it is derived from the BSSID by removing colons
         public let idx: String
 
         /// BSSID of the access point
@@ -99,6 +99,23 @@ extension WlanInterface {
             self.ssid = ssid
             self.status = status
             self.remainingDuration = remainingDuration
+        }
+
+        /// Convenience initializer for backward compatibility.
+        /// Derives idx from bssid by removing colons.
+        public init(
+            bssid: String,
+            ssid: String,
+            status: Status,
+            remainingDuration: Int? = nil
+        ) {
+            self.init(
+                idx: bssid.removingColons,
+                bssid: bssid,
+                ssid: ssid,
+                status: status,
+                remainingDuration: remainingDuration
+            )
         }
 
         public init(from decoder: Decoder) throws {
