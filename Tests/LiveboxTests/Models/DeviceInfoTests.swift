@@ -378,8 +378,8 @@ struct DeviceInfoTests {
         let encodedJson = try JSONSerialization.jsonObject(with: encodedData) as! [String: Any]
 
         #expect(encodedJson["physAddress"] as? String == "AA:BB:CC:DD:EE:FF")
-        #expect((encodedJson["ipAddress"] as? NSNull) != nil)
-        #expect((encodedJson["ipV6Address"] as? NSNull) != nil)
+        #expect(encodedJson["ipAddress"] == nil)
+        #expect(encodedJson["ipV6Address"] == nil)
         #expect(encodedJson["hostName"] as? String == "TestDevice")
         #expect(encodedJson["alias"] as? String == "Test Device")
         #expect(encodedJson["interfaceType"] as? String == "Wifi24")
