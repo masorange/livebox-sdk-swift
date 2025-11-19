@@ -7,15 +7,15 @@ public struct AccessPoint: Codable {
     public var ssid: String
     public var password: String
     public var ssidAdvertisementEnabled: Bool?
-    public var retryLimit: Int?
+    @FlexibleInt public var retryLimit: Int?
     public let wmmCapability: Bool?
     public let uapsdCapability: Bool?
     public var wmmEnable: Bool?
     public var uapsdEnable: Bool?
-    public let maxStations: Int?
+    @FlexibleInt public var maxStations: Int?
     public var apBridgeDisable: Bool?
     public var channelConf: ChannelConf
-    public let channel: Int
+    @FlexibleInt public var channel: Int?
     public var bandwidthConf: BandwidthConf
     public let bandwidth: String
     public var mode: String?
@@ -23,6 +23,7 @@ public struct AccessPoint: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case idx = "idx"
+        case idxAlt = "Idx"  // ZTE router variant
         case bssid = "BSSID"
         case type = "Type"
         case manner = "Manner"
@@ -90,6 +91,66 @@ public struct AccessPoint: Codable {
         self.mode = mode
         self.schedulingAllowed = schedulingAllowed
     }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Handle idx field that may come as "idx" or "Idx" (ZTE routers)
+        self.idx = container.decodeIfPresent(String.self, forFirstOf: .idx, .idxAlt)
+
+        self.bssid = try container.decode(String.self, forKey: .bssid)
+        self.type = try container.decode(AccessPointType.self, forKey: .type)
+        self.manner = try container.decode(Manner.self, forKey: .manner)
+        self.status = try container.decode(Status.self, forKey: .status)
+        self.ssid = try container.decode(String.self, forKey: .ssid)
+        self.password = try container.decode(String.self, forKey: .password)
+        self.ssidAdvertisementEnabled = try container.decodeIfPresent(Bool.self, forKey: .ssidAdvertisementEnabled)
+
+        self._retryLimit = try container.decodeIfPresent(FlexibleInt.self, forKey: .retryLimit) ?? FlexibleInt(wrappedValue: nil)
+
+        self.wmmCapability = try container.decodeIfPresent(Bool.self, forKey: .wmmCapability)
+        self.uapsdCapability = try container.decodeIfPresent(Bool.self, forKey: .uapsdCapability)
+        self.wmmEnable = try container.decodeIfPresent(Bool.self, forKey: .wmmEnable)
+        self.uapsdEnable = try container.decodeIfPresent(Bool.self, forKey: .uapsdEnable)
+
+        self._maxStations = try container.decodeIfPresent(FlexibleInt.self, forKey: .maxStations) ?? FlexibleInt(wrappedValue: nil)
+
+        self.apBridgeDisable = try container.decodeIfPresent(Bool.self, forKey: .apBridgeDisable)
+        self.channelConf = try container.decode(ChannelConf.self, forKey: .channelConf)
+
+        self._channel = try container.decodeIfPresent(FlexibleInt.self, forKey: .channel) ?? FlexibleInt(wrappedValue: nil)
+
+        self.bandwidthConf = try container.decode(BandwidthConf.self, forKey: .bandwidthConf)
+        self.bandwidth = try container.decode(String.self, forKey: .bandwidth)
+        self.mode = try container.decodeIfPresent(String.self, forKey: .mode)
+        self.schedulingAllowed = try container.decode(Bool.self, forKey: .schedulingAllowed)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encodeIfPresent(idx, forKey: .idx)
+        try container.encode(bssid, forKey: .bssid)
+        try container.encode(type, forKey: .type)
+        try container.encode(manner, forKey: .manner)
+        try container.encode(status, forKey: .status)
+        try container.encode(ssid, forKey: .ssid)
+        try container.encode(password, forKey: .password)
+        try container.encodeIfPresent(ssidAdvertisementEnabled, forKey: .ssidAdvertisementEnabled)
+        try container.encodeIfPresent(retryLimit, forKey: .retryLimit)
+        try container.encodeIfPresent(wmmCapability, forKey: .wmmCapability)
+        try container.encodeIfPresent(uapsdCapability, forKey: .uapsdCapability)
+        try container.encodeIfPresent(wmmEnable, forKey: .wmmEnable)
+        try container.encodeIfPresent(uapsdEnable, forKey: .uapsdEnable)
+        try container.encodeIfPresent(maxStations, forKey: .maxStations)
+        try container.encodeIfPresent(apBridgeDisable, forKey: .apBridgeDisable)
+        try container.encode(channelConf, forKey: .channelConf)
+        try container.encode(channel, forKey: .channel)
+        try container.encode(bandwidthConf, forKey: .bandwidthConf)
+        try container.encode(bandwidth, forKey: .bandwidth)
+        try container.encodeIfPresent(mode, forKey: .mode)
+        try container.encode(schedulingAllowed, forKey: .schedulingAllowed)
+    }
 }
 
 extension AccessPoint {
@@ -147,9 +208,32 @@ extension AccessPoint {
 }
 
 extension AccessPoint {
-    public enum AccessPointType: String, Codable {
-        case home = "Home"
-        case guest = "Guest"
+    public enum AccessPointType: RawRepresentable, Codable {
+        case home
+        case guest
+        case unknown(String)
+
+        public init?(rawValue: String) {
+            switch rawValue.lowercased() {
+            case "home":
+                self = .home
+            case "guest":
+                self = .guest
+            default:
+                self = .unknown(rawValue)
+            }
+        }
+
+        public var rawValue: String {
+            switch self {
+            case .home:
+                return "Home"
+            case .guest:
+                return "Guest"
+            case .unknown(let value):
+                return value
+            }
+        }
     }
 }
 
@@ -157,6 +241,17 @@ extension AccessPoint {
     public enum Manner: String, Codable {
         case combined = "Combined"
         case split = "Split"
+
+        public init?(rawValue: String) {
+            switch rawValue.lowercased() {
+            case "combined":
+                self = .combined
+            case "split":
+                self = .split
+            default:
+                return nil
+            }
+        }
     }
 }
 
@@ -164,6 +259,17 @@ extension AccessPoint {
     public enum Status: String, Codable {
         case up = "Up"
         case down = "Down"
+
+        public init?(rawValue: String) {
+            switch rawValue.lowercased() {
+            case "up":
+                self = .up
+            case "down":
+                self = .down
+            default:
+                return nil
+            }
+        }
     }
 }
 
@@ -172,6 +278,19 @@ extension AccessPoint {
         case auto = "Auto"
         case auto1 = "Auto1"
         case auto2 = "Auto2"
+
+        public init?(rawValue: String) {
+            switch rawValue.lowercased() {
+            case "auto":
+                self = .auto
+            case "auto1":
+                self = .auto1
+            case "auto2":
+                self = .auto2
+            default:
+                return nil
+            }
+        }
     }
 }
 

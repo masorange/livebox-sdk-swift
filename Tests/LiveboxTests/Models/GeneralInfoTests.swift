@@ -27,9 +27,7 @@ struct GeneralInfoTests {
             """
 
         let jsonData = json.data(using: .utf8)!
-
-        let decoder = JSONDecoder()
-        let info = try decoder.decode(GeneralInfo.self, from: jsonData)
+        let info = try JSONDecoder().decode(GeneralInfo.self, from: jsonData)
 
         // Test mandatory fields
         #expect(info.manufacturer == "Sagemcom")
@@ -65,6 +63,46 @@ struct GeneralInfoTests {
         #expect(info.restoreOccurred == nil)
     }
 
+    @Test("Decoding GeneralInfo from ZTE JSON")
+    func testDecodingZteJSON() throws {
+        let json = """
+            {
+                "ApiVersion": "2.2.7",
+                "Description": "HomeGateWay",
+                "DeviceLog": "/var/userlog.txt",
+                "FirstUseDate": "0001-01-01T00:00:00Z",
+                "HardwareVersion": "ZTEGLBFIB6S1.0.0",
+                "ManuFacturer": "ZTE",
+                "ManufacturerOUI": "F4E84F",
+                "ManufacturerURL": "",
+                "ModelName": "ZTEGFIBRA6S",
+                "ModemFirmwareVersion": "",
+                "ProductClass": "ZTEGFIBRA6S",
+                "ProvisioningCode": "",
+                "RouterImage": "http://192.168.1.1/img/top.png",
+                "RouterName": "Livebox",
+                "SerialNumber": "ZTEGD2FBA2F2",
+                "SoftwareVersion": "ZTEFIBRA6S-sp-P01N05",
+                "SpecVersion": "1.0",
+                "UpTime": "2674"
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let info = try JSONDecoder().decode(GeneralInfo.self, from: jsonData)
+
+        // Test mandatory fields - alternative key "ManuFacturer" should work
+        #expect(info.manufacturer == "ZTE")
+        #expect(info.modelName == "ZTEGFIBRA6S")
+        #expect(info.productClass == "ZTEGFIBRA6S")
+        #expect(info.serialNumber == "ZTEGD2FBA2F2")
+        #expect(info.hardwareVersion == "ZTEGLBFIB6S1.0.0")
+        #expect(info.softwareVersion == "ZTEFIBRA6S-sp-P01N05")
+
+        // Test UpTime as string to int conversion
+        #expect(info.upTime == 2674)
+    }
+
     @Test("Encoding GeneralInfo to JSON")
     func testEncoding() throws {
         let info = GeneralInfo(
@@ -96,9 +134,8 @@ struct GeneralInfoTests {
             routerImage: "http://liveboxfibra/images/livebox.png",
             routerName: "Livebox Fibra"
         )
-        let encoder = JSONEncoder()
 
-        let data = try encoder.encode(info)
+        let data = try JSONEncoder().encode(info)
         let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
 
         // Test mandatory fields
@@ -149,8 +186,7 @@ struct GeneralInfoTests {
             """
 
         let jsonData = json.data(using: .utf8)!
-        let decoder = JSONDecoder()
-        let info = try decoder.decode(GeneralInfo.self, from: jsonData)
+        let info = try JSONDecoder().decode(GeneralInfo.self, from: jsonData)
 
         // Test mandatory fields
         #expect(info.manufacturer == "TestManufacturer")
@@ -181,10 +217,93 @@ struct GeneralInfoTests {
             """
 
         let jsonData = json.data(using: .utf8)!
-        let decoder = JSONDecoder()
 
         #expect(throws: DecodingError.self) {
-            try decoder.decode(GeneralInfo.self, from: jsonData)
+            try JSONDecoder().decode(GeneralInfo.self, from: jsonData)
         }
     }
+
+    @Test("Encoding uses standard 'Manufacturer' key")
+    func testEncodingUsesStandardKey() throws {
+        let info = GeneralInfo(
+            manufacturer: "TestManufacturer",
+            modelName: "TestModel",
+            productClass: "TestClass",
+            serialNumber: "TEST123",
+            hardwareVersion: "1.0.0",
+            softwareVersion: "1.0.0"
+        )
+
+        let data = try JSONEncoder().encode(info)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+
+        // Should encode as "Manufacturer" (the standard key)
+        #expect(json["Manufacturer"] as? String == "TestManufacturer")
+        // Should not have other variants
+        #expect(json["ManuFacturer"] == nil)
+        #expect(json["manufacturer"] == nil)
+    }
+
+    @Test("Alternative manufacturer key works (ManuFacturer)")
+    func testAlternativeManufacturerKey() throws {
+        let json = """
+            {
+                "ManuFacturer": "ZTE",
+                "ModelName": "TestModel",
+                "ProductClass": "Livebox",
+                "SerialNumber": "TEST123",
+                "HardwareVersion": "1.0.0",
+                "SoftwareVersion": "1.0.0",
+                "UpTime": 0
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let info = try JSONDecoder().decode(GeneralInfo.self, from: jsonData)
+
+        #expect(info.manufacturer == "ZTE")
+        #expect(info.modelName == "TestModel")
+    }
+
+    @Test("Encoding to data works")
+    func testEncodeToData() throws {
+        let info = GeneralInfo(
+            manufacturer: "TestBrand",
+            modelName: "TestModel",
+            productClass: "TestClass",
+            serialNumber: "SN12345",
+            hardwareVersion: "HW1.0",
+            softwareVersion: "SW1.0"
+        )
+
+        let data = try JSONEncoder().encode(info)
+
+        // Verify we can decode it back
+        let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        #expect(decoded != nil)
+        #expect(decoded?["Manufacturer"] as? String == "TestBrand")
+        #expect(decoded?["ModelName"] as? String == "TestModel")
+    }
+
+    @Test("FlexibleInt handles string to int conversion for UpTime")
+    func testStringToIntConversion() throws {
+        let json = """
+            {
+                "Manufacturer": "TestBrand",
+                "ModelName": "TestModel",
+                "ProductClass": "TestClass",
+                "SerialNumber": "TEST123",
+                "HardwareVersion": "1.0.0",
+                "SoftwareVersion": "1.0.0",
+                "UpTime": "98765"
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let info = try JSONDecoder().decode(GeneralInfo.self, from: jsonData)
+
+        // String value should be converted to Int using @FlexibleInt
+        #expect(info.upTime == 98765)
+    }
+
 }

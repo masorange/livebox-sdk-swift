@@ -111,6 +111,95 @@ struct AccessPointTests {
         #expect(accessPoint.apBridgeDisable == nil)
     }
 
+    @Test("Decoding AccessPoint with alternative key name (Idx)")
+    func testDecodingWithAlternativeKeyName() throws {
+        // Test with uppercase "Idx" (ZTE router variant)
+        let json = """
+            {
+                "Idx": "8C19B5F8EDA7",
+                "BSSID": "8C:19:B5:F8:ED:A7",
+                "Type": "Home",
+                "Manner": "Combined",
+                "Status": "Up",
+                "SSID": "Livebox-Network",
+                "Password": "securePassword123",
+                "ChannelConf": "Auto",
+                "Channel": 6,
+                "BandwithConf": "20MHz",
+                "Bandwith": "20MHz",
+                "Mode": "11ng",
+                "SchedulingAllowed": true
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let accessPoint = try decoder.decode(AccessPoint.self, from: jsonData)
+
+        #expect(accessPoint.idx == "8C19B5F8EDA7")
+        #expect(accessPoint.bssid == "8C:19:B5:F8:ED:A7")
+        #expect(accessPoint.type == .home)
+    }
+
+    @Test("Decoding AccessPoint with case-insensitive enum values")
+    func testDecodingCaseInsensitiveEnums() throws {
+        let json = """
+            {
+                "idx": "8C19B5F8EDA7",
+                "BSSID": "8C:19:B5:F8:ED:A7",
+                "Type": "home",
+                "Manner": "combined",
+                "Status": "up",
+                "SSID": "Livebox-Network",
+                "Password": "securePassword123",
+                "ChannelConf": "auto",
+                "Channel": 6,
+                "BandwithConf": "20MHz",
+                "Bandwith": "20MHz",
+                "Mode": "11ng",
+                "SchedulingAllowed": true
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let accessPoint = try decoder.decode(AccessPoint.self, from: jsonData)
+
+        #expect(accessPoint.type == .home)
+        #expect(accessPoint.manner == .combined)
+        #expect(accessPoint.status == .up)
+        #expect(accessPoint.channelConf == .auto)
+    }
+
+    @Test("Decoding AccessPoint with uppercase enum values")
+    func testDecodingUppercaseEnums() throws {
+        let json = """
+            {
+                "idx": "8C19B5F8EDA7",
+                "BSSID": "8C:19:B5:F8:ED:A7",
+                "Type": "GUEST",
+                "Manner": "SPLIT",
+                "Status": "DOWN",
+                "SSID": "Livebox-Guest",
+                "Password": "guestPassword123",
+                "ChannelConf": "AUTO2",
+                "Channel": 11,
+                "BandwithConf": "40MHz",
+                "Bandwith": "40MHz",
+                "SchedulingAllowed": false
+            }
+            """
+
+        let jsonData = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let accessPoint = try decoder.decode(AccessPoint.self, from: jsonData)
+
+        #expect(accessPoint.type == .guest)
+        #expect(accessPoint.manner == .split)
+        #expect(accessPoint.status == .down)
+        #expect(accessPoint.channelConf == .auto2)
+    }
+
     @Test("Encoding AccessPoint to JSON")
     func testEncoding() throws {
         let accessPoint = AccessPoint(
@@ -172,13 +261,14 @@ struct AccessPointTests {
     @Test("AccessPointType enum cases")
     func testAccessPointTypeEnum() {
         // Test creation from raw values
-        #expect(AccessPoint.AccessPointType(rawValue: "Home") == .home)
-        #expect(AccessPoint.AccessPointType(rawValue: "Guest") == .guest)
-        #expect(AccessPoint.AccessPointType(rawValue: "Unknown") == nil)
+        #expect(AccessPoint.AccessPointType(rawValue: "Home")! == .home)
+        #expect(AccessPoint.AccessPointType(rawValue: "Guest")! == .guest)
+        #expect(AccessPoint.AccessPointType(rawValue: "Unknown")! == .unknown("Unknown"))
 
         // Test raw values
         #expect(AccessPoint.AccessPointType.home.rawValue == "Home")
         #expect(AccessPoint.AccessPointType.guest.rawValue == "Guest")
+        #expect(AccessPoint.AccessPointType(rawValue: "Unknown")!.rawValue == "Unknown")
     }
 
     @Test("Manner enum cases")
@@ -203,6 +293,15 @@ struct AccessPointTests {
         // Test raw values
         #expect(AccessPoint.Status.up.rawValue == "Up")
         #expect(AccessPoint.Status.down.rawValue == "Down")
+    }
+
+    @Test("ChannelConf enum cases")
+    func testChannelConfEnum() {
+        // Test creation from raw values
+        #expect(AccessPoint.ChannelConf(rawValue: "Auto") == .auto)
+        #expect(AccessPoint.ChannelConf(rawValue: "Auto1") == .auto1)
+        #expect(AccessPoint.ChannelConf(rawValue: "Auto2") == .auto2)
+        #expect(AccessPoint.ChannelConf(rawValue: "Unknown") == nil)
     }
 
     @Test("Creating AccessPoint request")
