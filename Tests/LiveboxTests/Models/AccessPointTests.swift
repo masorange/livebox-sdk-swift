@@ -261,14 +261,14 @@ struct AccessPointTests {
     @Test("AccessPointType enum cases")
     func testAccessPointTypeEnum() {
         // Test creation from raw values
-        #expect(AccessPoint.AccessPointType(rawValue: "Home")! == .home)
-        #expect(AccessPoint.AccessPointType(rawValue: "Guest")! == .guest)
-        #expect(AccessPoint.AccessPointType(rawValue: "Unknown")! == .unknown("Unknown"))
+        #expect(AccessPoint.AccessPointType(rawValue: "Home") == .home)
+        #expect(AccessPoint.AccessPointType(rawValue: "Guest") == .guest)
+        #expect(AccessPoint.AccessPointType(rawValue: "Unknown") == .unknown("Unknown"))
 
         // Test raw values
         #expect(AccessPoint.AccessPointType.home.rawValue == "Home")
         #expect(AccessPoint.AccessPointType.guest.rawValue == "Guest")
-        #expect(AccessPoint.AccessPointType(rawValue: "Unknown")!.rawValue == "Unknown")
+        #expect(AccessPoint.AccessPointType(rawValue: "Unknown").rawValue == "Unknown")
     }
 
     @Test("Manner enum cases")

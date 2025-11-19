@@ -47,7 +47,7 @@ public struct GeneralInfo: Codable {
     /// Provisioning code
     public let provisioningCode: String?
 
-    /// Uptime in seconds (can come as Int or String from different routers)
+    /// Uptime in seconds. Uses @FlexibleInt to support both Int and String values from different routers (e.g., ZTE routers may send this as a string)
     @FlexibleInt public var upTime: Int?
 
     /// First use date

@@ -28,23 +28,25 @@ extension KeyedDecodingContainer {
     /// manufacturer = try container.decode(String.self, forFirstOf: .manufacturer, .manufacturerAlt)
     /// ```
     func decode<T: Decodable>(_ type: T.Type, forFirstOf keys: Key...) throws -> T {
-        var lastError: Error?
-
+        var errors: [(key: Key, error: Error)] = []
         for key in keys {
             do {
                 return try decode(T.self, forKey: key)
             } catch {
-                lastError = error
+                errors.append((key, error))
                 continue
             }
         }
 
         // If we get here, none of the keys worked
+        let keysList = keys.map { $0.stringValue }.joined(separator: ", ")
+        let errorDetails = errors.map { "'\($0.key.stringValue)': \($0.error.localizedDescription)" }.joined(separator: "; ")
         let context = DecodingError.Context(
             codingPath: codingPath,
-            debugDescription: "Could not decode \(type) for any of the keys: \(keys.map { $0.stringValue }.joined(separator: ", "))"
+            debugDescription: "Could not decode \(type) for any of the keys: \(keysList). Errors: \(errorDetails)"
         )
-        throw lastError ?? DecodingError.keyNotFound(keys[0], context)
+
+        throw DecodingError.typeMismatch(type, context)
     }
 
     /// Decodes an optional value for the first key that exists in the container.

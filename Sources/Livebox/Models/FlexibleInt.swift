@@ -11,13 +11,15 @@ public struct FlexibleInt: Codable {
 
         if let intValue = try? container.decode(Int.self) {
             wrappedValue = intValue
-        } else if let stringValue = try? container.decode(String.self),
-            let intValue = Int(stringValue) {
+        } else if let stringValue = try? container.decode(String.self), let intValue = Int(stringValue) {
             wrappedValue = intValue
         } else if container.decodeNil() {
             wrappedValue = nil
         } else {
-            wrappedValue = nil
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Expected Int or String convertible to Int, but found invalid value"
+            )
         }
     }
 

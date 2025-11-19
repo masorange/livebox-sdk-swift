@@ -145,7 +145,7 @@ public struct AccessPoint: Codable {
         try container.encodeIfPresent(maxStations, forKey: .maxStations)
         try container.encodeIfPresent(apBridgeDisable, forKey: .apBridgeDisable)
         try container.encode(channelConf, forKey: .channelConf)
-        try container.encode(channel, forKey: .channel)
+        try container.encodeIfPresent(channel, forKey: .channel)
         try container.encode(bandwidthConf, forKey: .bandwidthConf)
         try container.encode(bandwidth, forKey: .bandwidth)
         try container.encodeIfPresent(mode, forKey: .mode)
@@ -213,7 +213,7 @@ extension AccessPoint {
         case guest
         case unknown(String)
 
-        public init?(rawValue: String) {
+        public init(rawValue: String) {
             switch rawValue.lowercased() {
             case "home":
                 self = .home
