@@ -17,5 +17,16 @@ extension DeviceScheduleStatus {
     public enum Status: String, Codable {
         case enabled = "Enabled"
         case disabled = "Disabled"
+
+        public init?(rawValue: String) {
+            switch rawValue.lowercased() {
+            case "enabled":
+                self = .enabled
+            case "disabled":
+                self = .disabled
+            default:
+                return nil
+            }
+        }
     }
 }

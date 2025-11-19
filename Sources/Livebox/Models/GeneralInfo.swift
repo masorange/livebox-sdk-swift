@@ -47,8 +47,8 @@ public struct GeneralInfo: Codable {
     /// Provisioning code
     public let provisioningCode: String?
 
-    /// Uptime in seconds
-    public let upTime: Int?
+    /// Uptime in seconds. Uses @FlexibleInt to support both Int and String values from different routers (e.g., ZTE routers may send this as a string)
+    @FlexibleInt public var upTime: Int?
 
     /// First use date
     public let firstUseDate: String?
@@ -82,36 +82,6 @@ public struct GeneralInfo: Codable {
 
     /// Router name (mandatory since v2.2.7)
     public let routerName: String?
-
-    private enum CodingKeys: String, CodingKey {
-        case manufacturer = "Manufacturer"
-        case manufacturerOUI = "ManufacturerOUI"
-        case modelName = "ModelName"
-        case description = "Description"
-        case productClass = "ProductClass"
-        case serialNumber = "SerialNumber"
-        case hardwareVersion = "HardwareVersion"
-        case softwareVersion = "SoftwareVersion"
-        case rescueVersion = "RescueVersion"
-        case modemFirmwareVersion = "ModemFirmwareVersion"
-        case enabledOptions = "EnabledOptions"
-        case additionalHardwareVersion = "AdditionalHardwareVersion"
-        case additionalSoftwareVersion = "AdditionalSoftwareVersion"
-        case specVersion = "SpecVersion"
-        case provisioningCode = "ProvisioningCode"
-        case upTime = "UpTime"
-        case firstUseDate = "FirstUseDate"
-        case deviceLog = "DeviceLog"
-        case manufacturerURL = "ManufacturerURL"
-        case country = "Country"
-        case numberOfReboots = "NumberOfReboots"
-        case upgradeOccurred = "UpgradeOccurred"
-        case resetOccurred = "ResetOccurred"
-        case restoreOccurred = "RestoreOccurred"
-        case apiVersion = "ApiVersion"
-        case routerImage = "RouterImage"
-        case routerName = "RouterName"
-    }
 
     public init(
         manufacturer: String,
@@ -157,7 +127,7 @@ public struct GeneralInfo: Codable {
         self.additionalSoftwareVersion = additionalSoftwareVersion
         self.specVersion = specVersion
         self.provisioningCode = provisioningCode
-        self.upTime = upTime
+        self._upTime = FlexibleInt(wrappedValue: upTime)
         self.firstUseDate = firstUseDate
         self.deviceLog = deviceLog
         self.manufacturerURL = manufacturerURL
@@ -169,5 +139,106 @@ public struct GeneralInfo: Codable {
         self.apiVersion = apiVersion
         self.routerImage = routerImage
         self.routerName = routerName
+    }
+
+    // MARK: - Codable conformance
+
+    enum CodingKeys: String, CodingKey {
+        case manufacturer = "Manufacturer"
+        case manufacturerAlt = "ManuFacturer"  // ZTE router variant
+        case manufacturerOUI = "ManufacturerOUI"
+        case modelName = "ModelName"
+        case description = "Description"
+        case productClass = "ProductClass"
+        case serialNumber = "SerialNumber"
+        case hardwareVersion = "HardwareVersion"
+        case softwareVersion = "SoftwareVersion"
+        case rescueVersion = "RescueVersion"
+        case modemFirmwareVersion = "ModemFirmwareVersion"
+        case enabledOptions = "EnabledOptions"
+        case additionalHardwareVersion = "AdditionalHardwareVersion"
+        case additionalSoftwareVersion = "AdditionalSoftwareVersion"
+        case specVersion = "SpecVersion"
+        case provisioningCode = "ProvisioningCode"
+        case upTime = "UpTime"
+        case firstUseDate = "FirstUseDate"
+        case deviceLog = "DeviceLog"
+        case manufacturerURL = "ManufacturerURL"
+        case country = "Country"
+        case numberOfReboots = "NumberOfReboots"
+        case upgradeOccurred = "UpgradeOccurred"
+        case resetOccurred = "ResetOccurred"
+        case restoreOccurred = "RestoreOccurred"
+        case apiVersion = "ApiVersion"
+        case routerImage = "RouterImage"
+        case routerName = "RouterName"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Handle Manufacturer field that may come as "Manufacturer" or "ManuFacturer" (ZTE)
+        self.manufacturer = try container.decode(String.self, forFirstOf: .manufacturer, .manufacturerAlt)
+        self.manufacturerOUI = try container.decodeIfPresent(String.self, forKey: .manufacturerOUI)
+        self.modelName = try container.decode(String.self, forKey: .modelName)
+        self.description = try container.decodeIfPresent(String.self, forKey: .description)
+        self.productClass = try container.decode(String.self, forKey: .productClass)
+        self.serialNumber = try container.decode(String.self, forKey: .serialNumber)
+        self.hardwareVersion = try container.decode(String.self, forKey: .hardwareVersion)
+        self.softwareVersion = try container.decode(String.self, forKey: .softwareVersion)
+        self.rescueVersion = try container.decodeIfPresent(String.self, forKey: .rescueVersion)
+        self.modemFirmwareVersion = try container.decodeIfPresent(String.self, forKey: .modemFirmwareVersion)
+        self.enabledOptions = try container.decodeIfPresent(String.self, forKey: .enabledOptions)
+        self.additionalHardwareVersion = try container.decodeIfPresent(String.self, forKey: .additionalHardwareVersion)
+        self.additionalSoftwareVersion = try container.decodeIfPresent(String.self, forKey: .additionalSoftwareVersion)
+        self.specVersion = try container.decodeIfPresent(String.self, forKey: .specVersion)
+        self.provisioningCode = try container.decodeIfPresent(String.self, forKey: .provisioningCode)
+
+        // UpTime uses @FlexibleInt to handle both Int and String values
+        self._upTime = try container.decodeIfPresent(FlexibleInt.self, forKey: .upTime) ?? FlexibleInt(wrappedValue: nil)
+
+        self.firstUseDate = try container.decodeIfPresent(String.self, forKey: .firstUseDate)
+        self.deviceLog = try container.decodeIfPresent(String.self, forKey: .deviceLog)
+        self.manufacturerURL = try container.decodeIfPresent(String.self, forKey: .manufacturerURL)
+        self.country = try container.decodeIfPresent(String.self, forKey: .country)
+        self.numberOfReboots = try container.decodeIfPresent(Int.self, forKey: .numberOfReboots)
+        self.upgradeOccurred = try container.decodeIfPresent(Bool.self, forKey: .upgradeOccurred)
+        self.resetOccurred = try container.decodeIfPresent(Bool.self, forKey: .resetOccurred)
+        self.restoreOccurred = try container.decodeIfPresent(Bool.self, forKey: .restoreOccurred)
+        self.apiVersion = try container.decodeIfPresent(String.self, forKey: .apiVersion)
+        self.routerImage = try container.decodeIfPresent(String.self, forKey: .routerImage)
+        self.routerName = try container.decodeIfPresent(String.self, forKey: .routerName)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(manufacturer, forKey: .manufacturer)
+        try container.encodeIfPresent(manufacturerOUI, forKey: .manufacturerOUI)
+        try container.encode(modelName, forKey: .modelName)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encode(productClass, forKey: .productClass)
+        try container.encode(serialNumber, forKey: .serialNumber)
+        try container.encode(hardwareVersion, forKey: .hardwareVersion)
+        try container.encode(softwareVersion, forKey: .softwareVersion)
+        try container.encodeIfPresent(rescueVersion, forKey: .rescueVersion)
+        try container.encodeIfPresent(modemFirmwareVersion, forKey: .modemFirmwareVersion)
+        try container.encodeIfPresent(enabledOptions, forKey: .enabledOptions)
+        try container.encodeIfPresent(additionalHardwareVersion, forKey: .additionalHardwareVersion)
+        try container.encodeIfPresent(additionalSoftwareVersion, forKey: .additionalSoftwareVersion)
+        try container.encodeIfPresent(specVersion, forKey: .specVersion)
+        try container.encodeIfPresent(provisioningCode, forKey: .provisioningCode)
+        try container.encodeIfPresent(_upTime, forKey: .upTime)
+        try container.encodeIfPresent(firstUseDate, forKey: .firstUseDate)
+        try container.encodeIfPresent(deviceLog, forKey: .deviceLog)
+        try container.encodeIfPresent(manufacturerURL, forKey: .manufacturerURL)
+        try container.encodeIfPresent(country, forKey: .country)
+        try container.encodeIfPresent(numberOfReboots, forKey: .numberOfReboots)
+        try container.encodeIfPresent(upgradeOccurred, forKey: .upgradeOccurred)
+        try container.encodeIfPresent(resetOccurred, forKey: .resetOccurred)
+        try container.encodeIfPresent(restoreOccurred, forKey: .restoreOccurred)
+        try container.encodeIfPresent(apiVersion, forKey: .apiVersion)
+        try container.encodeIfPresent(routerImage, forKey: .routerImage)
+        try container.encodeIfPresent(routerName, forKey: .routerName)
     }
 }
