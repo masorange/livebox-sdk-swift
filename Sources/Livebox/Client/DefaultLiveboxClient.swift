@@ -287,22 +287,28 @@ class DefaultLiveboxClient: LiveboxClient {
         }
 
         // Check if the operation is supported
-        let requiredOperation: Capabilities.Feature.Operation
+        // Some routers may use different operations for the same HTTP method,
+        // so we define primary and fallback operations
+        let requiredOperations: [Capabilities.Feature.Operation]
         switch method {
         case .get:
-            requiredOperation = .read
+            requiredOperations = [.read]
         case .post:
-            requiredOperation = pathVariables.isEmpty ? .invoke : .add
+            requiredOperations = pathVariables.isEmpty ? [.invoke] : [.add]
         case .put, .patch:
-            requiredOperation = .write
+            // Some routers use "I" (invoke) instead of "W" (write) for PUT operations
+            requiredOperations = [.write, .invoke]
         case .delete:
-            requiredOperation = .delete
+            requiredOperations = [.delete]
         default:
-            requiredOperation = .read
+            requiredOperations = [.read]
         }
 
-        if !feature.supports(operation: requiredOperation) {
-            completion(.failure(LiveboxError.operationNotSupported(featureId.id, String(describing: requiredOperation))))
+        // Check if at least one of the required operations is supported
+        let supportsOperation = requiredOperations.contains { feature.supports(operation: $0) }
+        if !supportsOperation {
+            let operationsDesc = requiredOperations.map { String(describing: $0) }.joined(separator: " or ")
+            completion(.failure(LiveboxError.operationNotSupported(featureId.id, operationsDesc)))
             return nil
         }
 
