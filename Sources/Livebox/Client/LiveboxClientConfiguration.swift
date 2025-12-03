@@ -20,13 +20,13 @@ public struct LiveboxClientConfiguration {
     /// Creates a new configuration with the specified parameters.
     /// - Parameters:
     ///   - baseURL: The base URL for the router API.
-    ///   - timeout: The timeout for network requests in seconds. Default is 30 seconds.
+    ///   - timeout: The timeout for network requests in seconds. Default is 60 seconds.
     ///   - defaultHeaders: Default headers to include with every request. Defaults to empty dictionary.
     ///   - username: Username for HTTP Basic Authentication. Default is nil.
     ///   - password: Password for HTTP Basic Authentication. Default is nil.
     public init(
         baseURL: URL,
-        timeout: TimeInterval = 30.0,
+        timeout: TimeInterval = 60.0,
         defaultHeaders: [String: String] = [:],
         username: String? = nil,
         password: String? = nil
@@ -41,14 +41,14 @@ public struct LiveboxClientConfiguration {
     /// Creates a new configuration with a string URL.
     /// - Parameters:
     ///   - baseURLString: The base URL string for the router API. Should be a valid URL.
-    ///   - timeout: The timeout for network requests in seconds. Default is 30 seconds.
+    ///   - timeout: The timeout for network requests in seconds. Default is 60 seconds.
     ///   - defaultHeaders: Default headers to include with every request. Defaults to empty dictionary.
     ///   - username: Username for HTTP Basic Authentication. Default is nil.
     ///   - password: Password for HTTP Basic Authentication. Default is nil.
     /// - Throws: An error if the baseURLString is not a valid URL.
     public init(
         baseURLString: String,
-        timeout: TimeInterval = 30.0,
+        timeout: TimeInterval = 60.0,
         defaultHeaders: [String: String] = [:],
         username: String? = nil,
         password: String? = nil
