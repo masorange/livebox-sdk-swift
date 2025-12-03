@@ -12,7 +12,7 @@ struct LiveboxClientTests {
         let config = LiveboxClientConfiguration(baseURL: url)
 
         #expect(config.baseURL == url)
-        #expect(config.timeout == 30.0)
+        #expect(config.timeout == 60.0)
         #expect(config.defaultHeaders.isEmpty)
     }
 
