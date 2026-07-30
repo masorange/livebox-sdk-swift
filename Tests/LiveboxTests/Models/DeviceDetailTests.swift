@@ -56,7 +56,7 @@ struct DeviceDetailsTests {
         #expect(deviceDetails.lastConnection == "2023-10-15T14:30:00Z")
         #expect(deviceDetails.tags == "gaming,work")
         #expect(deviceDetails.layer2Interface == 1)
-        #expect(deviceDetails.interfaceType == "Ethernet")
+        #expect(deviceDetails.interfaceType == .ethernet)
         #expect(deviceDetails.deviceType == "Computer")
         #expect(deviceDetails.deviceID == "device_123")
 
@@ -114,7 +114,7 @@ struct DeviceDetailsTests {
         #expect(deviceDetails.lastConnection == "")
         #expect(deviceDetails.tags == "")
         #expect(deviceDetails.layer2Interface == 0)
-        #expect(deviceDetails.interfaceType == "WiFi")
+        #expect(deviceDetails.interfaceType == .wifi)
         #expect(deviceDetails.deviceType == "Unknown")
         #expect(deviceDetails.deviceID == "device_456")
 
@@ -171,7 +171,7 @@ struct DeviceDetailsTests {
         #expect(deviceDetails.lastConnection == "2023-10-15T16:45:00Z")
         #expect(deviceDetails.tags == "mobile,personal")
         #expect(deviceDetails.layer2Interface == 2)
-        #expect(deviceDetails.interfaceType == "Wifi")
+        #expect(deviceDetails.interfaceType == .wifi)
         #expect(deviceDetails.deviceType == "Smartphone")
         #expect(deviceDetails.deviceID == "iphone_001")
     }
@@ -198,7 +198,7 @@ struct DeviceDetailsTests {
             lastConnection: "2023-10-15T14:30:00Z",
             tags: "test,device",
             layer2Interface: 1,
-            interfaceType: "Ethernet",
+            interfaceType: .ethernet,
             manufacturerOUI: "00:11:22",
             serialNumber: "SN123456789",
             productClass: "Desktop",
@@ -281,7 +281,7 @@ struct DeviceDetailsTests {
         #expect(deviceDetails.lastConnection == "2023-10-15T18:00:00Z")
         #expect(deviceDetails.tags == "test")
         #expect(deviceDetails.layer2Interface == 1)
-        #expect(deviceDetails.interfaceType == "Ethernet")
+        #expect(deviceDetails.interfaceType == .ethernet)
         #expect(deviceDetails.deviceType == "Computer")
         #expect(deviceDetails.deviceID == "empty_optional_device")
 
@@ -338,7 +338,7 @@ struct DeviceDetailsTests {
         #expect(deviceDetails.lastConnection == "2023-10-15T20:15:30Z")
         #expect(deviceDetails.tags == "ñoño,café,español")
         #expect(deviceDetails.layer2Interface == 2)
-        #expect(deviceDetails.interfaceType == "WiFi/Ethernet")
+        #expect(deviceDetails.interfaceType == .unknown)
         #expect(deviceDetails.deviceType == "Smart TV")
         #expect(deviceDetails.deviceID == "special_chars_device_äöü")
     }
@@ -436,7 +436,7 @@ struct DeviceDetailsTests {
         #expect(deviceDetails.alias == "Device on High Interface")
         #expect(deviceDetails.active == false)
         #expect(deviceDetails.layer2Interface == 9999)
-        #expect(deviceDetails.interfaceType == "Unknown")
+        #expect(deviceDetails.interfaceType == .unknown)
         #expect(deviceDetails.deviceType == "IoT")
         #expect(deviceDetails.deviceID == "high_interface_device")
     }

@@ -4,6 +4,10 @@ import Testing
 @testable import Livebox
 @testable import LiveboxAsync
 
+// Note: all failure tests use `catch { guard case LiveboxError.X = error }` instead of
+// `catch LiveboxError.X(...)` to avoid a Swift 6.3.3 compiler ICE (SIL ownership verifier
+// crash) triggered by typed-throws + enum-pattern catch in async context.
+
 @Suite("LiveboxAPI Async Tests")
 struct LiveboxAPIAsyncTests {
     var mockClient: MockLiveboxClient
@@ -72,7 +76,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.getGeneralInfo()
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "GeneralInfo")
         }
     }
@@ -99,7 +106,10 @@ struct LiveboxAPIAsyncTests {
         do {
             try await service.reboot()
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "Reboot")
         }
     }
@@ -131,7 +141,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.getWifiInterfaces()
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "Wifi")
         }
     }
@@ -166,7 +179,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.getWlanInterface(wlanIfc: "wl0")
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "WlanInterface")
         }
     }
@@ -200,7 +216,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.getDeviceSchedules(mac: deviceId)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "PcDevicesMacSchedules")
         }
     }
@@ -246,7 +265,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.addDeviceSchedules(mac: mac, schedules: schedules)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "PcDevicesMac")
         }
     }
@@ -265,7 +287,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.addDeviceSchedules(mac: mac, schedules: schedules)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "PcDevicesMacSchedules")
         }
     }
@@ -297,7 +322,10 @@ struct LiveboxAPIAsyncTests {
         do {
             try await service.changeDeviceScheduleStatus(mac: mac, status: status)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "PcDevicesMac")
         }
     }
@@ -334,7 +362,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.deleteDeviceSchedules(mac: mac, schedules: schedules)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "PcDevicesMacSchedules")
         }
     }
@@ -369,7 +400,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.getDeviceDetail(mac: deviceId)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "ConnectedDevicesMac")
         }
     }
@@ -404,7 +438,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.setDeviceAlias(mac: deviceId, alias: newAlias)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "ConnectedDevicesMac")
         }
     }
@@ -438,7 +475,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.getConnectedDevices()
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "ConnectedDevices")
         }
     }
@@ -473,7 +513,10 @@ struct LiveboxAPIAsyncTests {
         do {
             _ = try await service.getWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "WlanScheduleEnable")
         }
     }
@@ -509,7 +552,10 @@ struct LiveboxAPIAsyncTests {
         do {
             try await service.changeWlanScheduleStatus(wlanIfc: wlanIfc, wlanAp: wlanAp, status: status)
             Issue.record("Expected failure but got success")
-        } catch .featureNotFound(let message) {
+        } catch {
+            guard case LiveboxError.featureNotFound(let message) = error else {
+                Issue.record("Unexpected error: \(error)"); return
+            }
             #expect(message == "WlanScheduleEnable")
         }
     }
