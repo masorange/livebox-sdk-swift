@@ -20,7 +20,7 @@ public struct DeviceDetail: Codable {
     public let lastConnection: String
     public let tags: String
     public let layer2Interface: Int
-    public let interfaceType: String
+    public let interfaceType: InterfaceType
     public let manufacturerOUI: String?
     public let serialNumber: String?
     public let productClass: String?
@@ -50,7 +50,7 @@ public struct DeviceDetail: Codable {
         lastConnection: String,
         tags: String,
         layer2Interface: Int,
-        interfaceType: String,
+        interfaceType: InterfaceType,
         manufacturerOUI: String? = nil,
         serialNumber: String? = nil,
         productClass: String? = nil,
@@ -97,6 +97,7 @@ extension DeviceDetail {
         case wifi = "Wifi"
         case wifi24 = "Wifi24"
         case wifi50 = "Wifi50"
+        case wifi60 = "Wifi60"
         case unknown = "Unknown"
 
         public init?(rawValue: String) {
@@ -109,6 +110,8 @@ extension DeviceDetail {
                 self = .wifi24
             case "wifi50":
                 self = .wifi50
+            case "wifi60":
+                self = .wifi60
             default:
                 self = .unknown
             }

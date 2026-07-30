@@ -200,7 +200,7 @@ public enum TestHelpers {
         lastConnection: String = "2023-01-01T12:00:00Z",
         tags: String = "",
         layer2Interface: Int = 1,
-        interfaceType: String = "Ethernet",
+        interfaceType: DeviceDetail.InterfaceType = .ethernet,
         manufacturerOUI: String? = "AA:BB:CC",
         serialNumber: String? = nil,
         productClass: String? = nil,

@@ -32,6 +32,7 @@ extension DeviceInfo {
         case wifi = "Wifi"
         case wifi24 = "Wifi24"
         case wifi50 = "Wifi50"
+        case wifi60 = "Wifi60"
         case unknown = "Unknown"
 
         public init?(rawValue: String) {
@@ -44,6 +45,8 @@ extension DeviceInfo {
                 self = .wifi24
             case "wifi50":
                 self = .wifi50
+            case "wifi60":
+                self = .wifi60
             default:
                 self = .unknown
             }
