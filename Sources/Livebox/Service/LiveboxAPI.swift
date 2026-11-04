@@ -1,21 +1,36 @@
 import Foundation
 
-/// A service class for interacting with Livebox routers.
-/// This class provides high-level methods for common router operations based on router capabilities.
+/// The entry point to interact with a Livebox router.
+///
+/// `LiveboxAPI` provides high-level methods for common router operations. Each method relies on a feature
+/// published in the router's capabilities, so fetch them first with ``login(username:password:completion:)``
+/// or ``getCapabilities(completion:)``. Otherwise, requests fail with ``LiveboxError/featureNotFound(_:)``.
 ///
 /// ## Authentication
 ///
-/// The Livebox API does not maintain sessions. Instead, authentication credentials must be sent with
-/// each request using HTTP Basic Authentication. Since there is no dedicated login endpoint in the
-/// router's API, this service uses the capabilities fetch operation as a way to validate credentials.
+/// The Livebox API does not maintain sessions. Instead, credentials are sent with each request using
+/// HTTP Basic Authentication. Since the router has no login endpoint, the capabilities request is used
+/// to validate credentials:
 ///
-/// - The `login` method performs a "login" by updating credentials and then fetching capabilities
-///   to verify they are valid. If the fetch succeeds, the credentials are considered valid.
-/// - The `fetchCapabilities` method simply fetches the router's capabilities without updating
-///   credentials or performing any authentication validation.
+/// - ``login(username:password:completion:)`` sets the credentials and fetches the capabilities to check them.
+///   If the request fails, the previous credentials are restored.
+/// - ``getCapabilities(completion:)`` fetches the capabilities with the current credentials, without changing them.
+/// - ``updateCredentials(username:password:)`` sets the credentials without checking them.
 ///
-/// This means you should use `login` or `updateCredentials` when you want to authenticate with new
-/// credentials, and `fetchCapabilities` when you just need to retrieve the router's feature information.
+/// ## Identifiers
+///
+/// - `wlanIfc` is the identifier of a Wi-Fi interface, such as ``Wifi/id`` or ``WlanInterface/id``.
+/// - `wlanAp` is the identifier of an access point: ``WlanInterface/ShortAccessPoint/idx``. Depending on the
+///   manufacturer and the network, routers use either an index or the BSSID without colons.
+/// - `mac` is the MAC address of a device, such as ``DeviceInfo/physAddress``.
+///
+/// Colons are removed from `wlanAp` and `mac` before sending the request, so both `AA:BB:CC:DD:EE:FF` and
+/// `AABBCCDDEEFF` are accepted.
+///
+/// ## Schedules
+///
+/// A ``Schedule`` is a 1-hour slot during which devices have no access to the network.
+/// Parental control schedules apply to a single device, and Wi-Fi schedules apply to the whole router.
 public class LiveboxAPI {
     /// The client used to make API requests.
     private var client: LiveboxClient
@@ -23,15 +38,19 @@ public class LiveboxAPI {
     /// Whether the capabilities have been fetched.
     private var capabilitiesFetched = false
 
-    /// Whether the service is currently authenticated.
+    /// Whether credentials are set.
+    ///
+    /// It's `true` after a successful ``login(username:password:completion:)``, or when credentials are provided
+    /// at creation or through ``updateCredentials(username:password:)``. In the last two cases, the credentials
+    /// haven't been validated.
     private(set) public var isAuthenticated = false
 
-    /// Gets the current base URL.
+    /// The base URL of the router API.
     public var baseURL: URL {
         return client.configuration.baseURL
     }
 
-    /// Gets the current username (if any).
+    /// The current username, if any.
     public var currentUsername: String? {
         return client.configuration.username
     }
@@ -40,6 +59,8 @@ public class LiveboxAPI {
     struct EmptyBody: Encodable {}
 
     /// Creates a new Livebox service with the specified client.
+    ///
+    /// If the client already has credentials, ``isAuthenticated`` is `true`.
     /// - Parameter client: The client to use for making API requests.
     public init(client: LiveboxClient) {
         self.client = client
@@ -48,7 +69,7 @@ public class LiveboxAPI {
     }
 
     /// Creates a new Livebox service with a base URL (without authentication).
-    /// Use the `login` method to authenticate after creation.
+    /// Use ``login(username:password:completion:)`` to authenticate after creation.
     /// - Parameter baseURLString: The base URL string for the router API.
     /// - Throws: An error if the baseURLString is not a valid URL.
     public convenience init(baseURLString: String) throws {
@@ -57,7 +78,7 @@ public class LiveboxAPI {
     }
 
     /// Creates a new Livebox service with a base URL (without authentication).
-    /// Use the `login` method to authenticate after creation.
+    /// Use ``login(username:password:completion:)`` to authenticate after creation.
     /// - Parameter baseURL: The base URL for the router API.
     public convenience init(baseURL: URL) {
         let client = LiveboxClientFactory.createClient(baseURL: baseURL, username: nil, password: nil)
@@ -88,12 +109,17 @@ public class LiveboxAPI {
     }
 
     /// Authenticates with the router using the provided credentials.
-    /// This method fetches capabilities to validate the credentials.
+    ///
+    /// This method sets the credentials and fetches the capabilities to validate them.
+    /// If the request fails, the previous credentials are restored.
+    ///
+    /// It also checks that the router is compatible: incompatible routers don't publish any feature.
     /// - Parameters:
     ///   - username: Username for authentication (default: "UsrAdmin")
     ///   - password: Password for authentication
-    ///   - completion: A callback to invoke when authentication completes
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    ///   - completion: A callback to invoke when authentication completes. On success, the value is `true`
+    ///     if the router published at least one feature.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func login(
         username: String = "UsrAdmin",
@@ -132,16 +158,18 @@ public class LiveboxAPI {
         }
     }
 
-    /// Logs out by clearing authentication credentials.
-    /// Note: This doesn't make any network requests, it just clears local credentials.
+    /// Logs out by clearing the credentials.
+    ///
+    /// This method doesn't make any network request.
     public func logout() {
         try? client.updateCredentials(username: nil, password: nil)
         isAuthenticated = false
         capabilitiesFetched = false
     }
 
-    /// Updates the authentication credentials without testing them.
-    /// Use `login` if you want to validate the credentials.
+    /// Updates the authentication credentials without validating them.
+    ///
+    /// Use ``login(username:password:completion:)`` to validate the credentials.
     /// - Parameters:
     ///   - username: New username for authentication
     ///   - password: New password for authentication
@@ -156,7 +184,6 @@ public class LiveboxAPI {
     /// - Parameters:
     ///   - baseURL: The new base URL for the router API
     ///   - clearCapabilities: Whether to clear cached capabilities (default: false)
-    /// - Throws: An error if the URL cannot be updated
     public func updateBaseURL(_ baseURL: URL, clearCapabilities: Bool = false) {
         client.updateBaseURL(baseURL, clearCache: clearCapabilities)
         // Reset capabilities flag if clearing capabilities
@@ -179,8 +206,10 @@ public class LiveboxAPI {
     }
 
     /// Fetches the capabilities of the router.
+    ///
+    /// The capabilities are cached and used to build the requests of the other methods.
     /// - Parameter completion: A callback to invoke when the operation completes, with either the capabilities or an error.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getCapabilities(completion: @escaping (Result<Capabilities, LiveboxError>) -> Void) -> URLSessionDataTask? {
         client.getCapabilities { [weak self] result in
@@ -193,7 +222,7 @@ public class LiveboxAPI {
 
     /// Gets the router's general information.
     /// - Parameter completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getGeneralInfo(completion: @escaping (Result<GeneralInfo, LiveboxError>) -> Void) -> URLSessionDataTask? {
         client.requestFeature(id: .generalInfo, method: .get, completion: completion)
@@ -201,7 +230,7 @@ public class LiveboxAPI {
 
     /// Reboots the router.
     /// - Parameter completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func reboot(completion: @escaping (Result<Void, LiveboxError>) -> Void) -> URLSessionDataTask? {
         client.invokeFeature(id: .reboot, body: nil as EmptyBody?, completion: completion)
@@ -209,7 +238,7 @@ public class LiveboxAPI {
 
     /// Gets the router's Wi-Fi interfaces.
     /// - Parameter completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getWifiInterfaces(completion: @escaping (Result<[Wifi], LiveboxError>) -> Void) -> URLSessionDataTask? {
         client.requestFeature(id: .wifi, method: .get, completion: completion)
@@ -217,9 +246,9 @@ public class LiveboxAPI {
 
     /// Gets a specific router's Wi-Fi interface.
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getWlanInterface(wlanIfc: String, completion: @escaping (Result<WlanInterface, LiveboxError>) -> Void)
         -> URLSessionDataTask?
@@ -229,10 +258,10 @@ public class LiveboxAPI {
 
     /// Gets the details of a specific Wi-Fi access point.
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
-    /// - Parameter completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
+    ///   - completion: A callback to invoke with the result.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getAccessPoint(
         wlanIfc: String, wlanAp: String, completion: @escaping (Result<AccessPoint, LiveboxError>) -> Void
@@ -247,11 +276,11 @@ public class LiveboxAPI {
 
     /// Updates the details of a specific Wi-Fi access point.
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - accessPoint: The new details of the access point.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func updateAccessPoint(
         wlanIfc: String, wlanAp: String, accessPoint: AccessPoint,
@@ -266,10 +295,11 @@ public class LiveboxAPI {
         )
     }
 
-    /// Retrieves the list of connected devices.
-    /// - Parameters:
-    ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// Retrieves the list of devices known by the router.
+    ///
+    /// Check ``DeviceInfo/active`` to know whether a device is currently connected.
+    /// - Parameter completion: A callback to invoke with the result.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getConnectedDevices(completion: @escaping (Result<[DeviceInfo], LiveboxError>) -> Void) -> URLSessionDataTask? {
         client.requestFeature(
@@ -281,9 +311,9 @@ public class LiveboxAPI {
 
     /// Retrieves the details of a specific device.
     /// - Parameters:
-    ///   - id: The MAC of the device.
+    ///   - mac: The MAC address of the device.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getDeviceDetail(mac: String, completion: @escaping (Result<DeviceDetail, LiveboxError>) -> Void) -> URLSessionDataTask? {
         client.requestFeature(
@@ -296,10 +326,10 @@ public class LiveboxAPI {
 
     /// Sets the alias of a specific device.
     /// - Parameters:
-    ///   - mac: The MAC of the device.
+    ///   - mac: The MAC address of the device.
     ///   - alias: The new alias for the device.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func setDeviceAlias(mac: String, alias: String, completion: @escaping (Result<DeviceDetail, LiveboxError>) -> Void)
         -> URLSessionDataTask?
@@ -313,11 +343,11 @@ public class LiveboxAPI {
         )
     }
 
-    /// Gets the schedules of a specific device.
+    /// Gets the parental control schedules of a specific device.
     /// - Parameters:
-    ///   - mac: The MAC of the device.
+    ///   - mac: The MAC address of the device.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getDeviceSchedules(mac: String, completion: @escaping (Result<Schedules, LiveboxError>) -> Void)
         -> URLSessionDataTask?
@@ -330,12 +360,15 @@ public class LiveboxAPI {
         )
     }
 
-    /// Adds the schedules of a specific device.
+    /// Adds parental control schedules to a specific device.
+    ///
+    /// This method first enables the schedules of the device with
+    /// ``changeDeviceScheduleStatus(mac:status:completion:)``, and then adds the schedules.
     /// - Parameters:
     ///   - mac: The MAC address of the device.
     ///   - schedules: The new schedules for the device.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the first request (the status change).
     @discardableResult
     public func addDeviceSchedules(
         mac: String,
@@ -362,13 +395,14 @@ public class LiveboxAPI {
         }
     }
 
-    /// Changes the status of a connected device's schedule.
-    /// Automatically called by `addDeviceSchedules(_:_:_:)` before adding the schedules.
+    /// Enables or disables the parental control schedules of a device.
+    ///
+    /// ``addDeviceSchedules(mac:schedules:completion:)`` calls this method to enable the schedules before adding them.
     /// - Parameters:
-    ///   - mac: The MAC of the device.
+    ///   - mac: The MAC address of the device.
     ///   - status: The status to set.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func changeDeviceScheduleStatus(
         mac: String,
@@ -390,12 +424,12 @@ public class LiveboxAPI {
         }
     }
 
-    /// Deletes the schedules of a connected device.
+    /// Deletes parental control schedules of a specific device.
     /// - Parameters:
-    ///   - mac: The MAC of the device.
+    ///   - mac: The MAC address of the device.
     ///   - schedules: The schedules to delete.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func deleteDeviceSchedules(mac: String, schedules: Schedules, completion: @escaping (Result<Schedules, LiveboxError>) -> Void)
         -> URLSessionDataTask?
@@ -409,15 +443,15 @@ public class LiveboxAPI {
         )
     }
 
-    /// Retrieves the schedules from the router.
+    /// Retrieves the Wi-Fi schedules of the router.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getWlanSchedules(
         wlanIfc: String,
@@ -432,16 +466,16 @@ public class LiveboxAPI {
         )
     }
 
-    /// Adds schedules to the router.
+    /// Adds Wi-Fi schedules to the router.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - schedules: The schedules to add.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func addWlanSchedules(
         wlanIfc: String,
@@ -458,16 +492,16 @@ public class LiveboxAPI {
         )
     }
 
-    /// Deletes the specified schedules.
+    /// Deletes Wi-Fi schedules from the router.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - schedules: The schedules to delete.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func deleteWlanSchedules(
         wlanIfc: String,
@@ -484,15 +518,15 @@ public class LiveboxAPI {
         )
     }
 
-    /// Retrieves the router's WLAN schedule status (enable/disable state).
+    /// Retrieves whether the router's Wi-Fi schedules are enabled.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func getWlanScheduleStatus(
         wlanIfc: String,
@@ -507,16 +541,16 @@ public class LiveboxAPI {
         )
     }
 
-    /// Changes the router's schedule status.
+    /// Enables or disables the router's Wi-Fi schedules.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - status: The status to set.
     ///   - completion: A callback to invoke with the result.
-    /// - Returns: A URLSessionDataTask that can be used to cancel the request.
+    /// - Returns: A URLSessionDataTask that can be used to cancel the request, or `nil` if the request couldn't be started.
     @discardableResult
     public func changeWlanScheduleStatus(
         wlanIfc: String,

@@ -1,5 +1,9 @@
 import Foundation
 
+/// A client that sends requests to the features of a router.
+///
+/// ``LiveboxAPI`` uses a client to perform every request. Use ``LiveboxClientFactory`` to create the default
+/// implementation, or implement this protocol to provide your own, for example a test double.
 public protocol LiveboxClient {
     /// The client's configuration.
     var configuration: LiveboxClientConfiguration { get }
@@ -58,9 +62,8 @@ public protocol LiveboxClient {
 }
 
 extension LiveboxClient {
-    /// Updates the base URL for this client with default parameters.
+    /// Updates the base URL for this client, keeping the cached capabilities.
     /// - Parameter baseURL: New base URL for the API
-    /// - Throws: An error if the URL cannot be updated
     func updateBaseURL(_ baseURL: URL) {
         updateBaseURL(baseURL, clearCache: false)
     }
@@ -138,11 +141,17 @@ extension LiveboxClient {
 
 /// Represents HTTP methods used for requests.
 public enum HTTPMethod: String {
+    /// `GET`: reads a resource.
     case get = "GET"
+    /// `POST`: adds a resource or invokes an action.
     case post = "POST"
+    /// `PUT`: updates a resource.
     case put = "PUT"
+    /// `DELETE`: deletes a resource.
     case delete = "DELETE"
+    /// `PATCH`: partially updates a resource.
     case patch = "PATCH"
+    /// `HEAD`: reads the headers of a resource.
     case head = "HEAD"
 }
 

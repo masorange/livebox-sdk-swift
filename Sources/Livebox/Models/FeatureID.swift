@@ -1,130 +1,238 @@
 import Foundation
 
 /// A type-safe identifier for router features.
-/// This enum provides compile-time safety when referencing features,
-/// preventing typos and enabling autocompletion.
+///
+/// Each case matches the `Id` of a feature in the router's ``Capabilities``.
+/// A router only supports the features listed in its capabilities.
 public enum FeatureID: String, CaseIterable {
     // MARK: - General Information
+    /// Router capabilities.
     case capabilities = "Capabilities"
+    /// General router information.
     case generalInfo = "GeneralInfo"
+    /// Reboot the router.
     case reboot = "Reboot"
+    /// Reset router configuration.
     case reset = "Reset"
+    /// Factory reset the router.
     case fullReset = "FullReset"
+    /// Firmware upgrade.
     case fwUpgrade = "FwUpgrade"
+    /// Automatic reboot configuration.
     case autoreboot = "Autoreboot"
 
     // MARK: - WAN
+    /// WAN configuration.
     case wan = "Wan"
+    /// Supported WAN features.
     case wanSupported = "WanSupported"
+    /// DSL configuration.
     case dsl = "Dsl"
+    /// DSL statistics.
     case dslStats = "DslStats"
+    /// 3G configuration.
     case threeG = "3g"
+    /// 3G network settings.
     case threeGNetwork = "3gNetwork"
+    /// 3G PIN management.
     case threeGPin = "3gPin"
+    /// 3G PUK management.
     case threeGPuk = "3gPuk"
+    /// ONT configuration.
     case ont = "Ont"
+    /// ONT alarms.
     case ontAlarms = "OntAlarms"
+    /// ONT GEM statistics.
     case ontGem = "OntGem"
+    /// ONT GTC statistics.
     case ontGtc = "OntGtc"
+    /// PPP configuration.
     case ppp = "Ppp"
+    /// Restart PPP connection.
     case pppRestart = "PppRestart"
+    /// WAN DHCP configuration.
     case wanDhcp = "WanDhcp"
+    /// Renew WAN DHCP lease.
     case wanDhcpRenew = "WanDhcpRenew"
+    /// WAN DHCPv6 configuration.
     case wanDhcpv6 = "WanDhcpv6"
+    /// Renew WAN DHCPv6 lease.
     case wanDhcpv6Renew = "WanDhcpv6Renew"
 
     // MARK: - WiFi
+    /// Supported WiFi features.
     case wifiSupported = "WifiSupported"
+    /// WiFi interfaces.
     case wifi = "Wifi"
+    /// Smart WiFi configuration.
     case smartWifi = "SmartWifi"
+    /// WLAN interface configuration.
     case wlanInterface = "WlanInterface"
+    /// Supported WLAN features.
     case wlanSupported = "WlanSupported"
+    /// WLAN access point configuration.
     case wlanAccessPoint = "WlanAccessPoint"
+    /// WLAN security settings.
     case wlanSecurity = "WlanSecurity"
+    /// WLAN WPS configuration.
     case wlanWPS = "WlanWPS"
+    /// Start WLAN WPS pairing.
     case wlanWpsStartPairing = "WlanWpsStartPairing"
+    /// WLAN MAC filtering.
     case wlanMacFiltering = "WlanMacFiltering"
+    /// WLAN MAC filtering entry.
     case wlanMacFilteringMac = "WlanMacFilteringMac"
+    /// WLAN scheduling.
     case wlanSchedule = "WlanSchedule"
+    /// Enable WLAN scheduling.
     case wlanScheduleEnable = "WlanScheduleEnable"
+    /// WLAN schedule entry.
     case wlanScheduleId = "WlanScheduleId"
+    /// Delete WLAN schedule by ID.
     case wlanScheduleDelById = "WlanScheduleDelById"
+    /// Temporarily switch on WLAN.
     case wlanScheduleTempSwitchOn = "WlanScheduleTempSwitchOn"
+    /// Scan WiFi channels.
     case scanChannel = "ScanChannel"
 
     // MARK: - LAN & DHCP
+    /// LAN DHCP configuration.
     case lanDhcp = "LanDhcp"
+    /// DHCP fixed IP addresses.
     case lanDhcpFixedIp = "LanDhcpFixedIp"
+    /// DHCP fixed IP address entry.
     case lanDhcpFixedIpId = "LanDhcpFixedIpId"
+    /// Connected devices.
     case connectedDevices = "ConnectedDevices"
+    /// Connected device details.
     case connectedDevicesMac = "ConnectedDevicesMac"
+    /// Device list.
     case deviceList = "DeviceList"
 
     // MARK: - Connectivity
+    /// Connectivity status.
     case connectivity = "Connectivity"
+    /// Ethernet ports.
     case ethPort = "EthPort"
+    /// Ethernet port configuration.
     case ethPortId = "EthPortId"
+    /// USB ports.
     case usbPort = "UsbPort"
+    /// USB port details.
     case usbPortId = "UsbPortId"
+    /// Eject USB device.
     case usbPortIdEject = "UsbPortIdEject"
+    /// FXS ports.
     case fxsPort = "FxsPort"
 
     // MARK: - VoIP
+    /// VoIP configuration.
     case voIP = "VoIP"
+    /// SIP configuration.
     case sip = "SIP"
+    /// SIP lines.
     case sipLines = "SipLines"
+    /// SIP line configuration.
     case sipLinesLine = "SipLinesLine"
+    /// SIP subscription.
+    ///
+    /// The raw value, `SipSuscription`, matches the one sent by the router.
     case sipSubscription = "SipSuscription"
+    /// H.323 configuration.
     case h323 = "H323"
+    /// H.323 lines.
     case h323Lines = "H323Lines"
+    /// H.323 line configuration.
     case h323LinesLine = "H323LinesLine"
+    /// Softphone configuration.
     case softphone = "Softphone"
+    /// Softphone paired clients.
     case softphonePairedClients = "SoftphonePairedClients"
+    /// Autodial configuration.
     case autodial = "Autodial"
+    /// Ring phone.
     case ring = "Ring"
+    /// Call registry.
     case callRegistry = "CallRegistry"
 
     // MARK: - Services
+    /// Dynamic DNS configuration.
     case ddns = "DDNS"
+    /// Available DDNS providers.
     case ddnsProviders = "DdnsProviders"
+    /// Parental control.
     case parentalCtrl = "ParentalCtrl"
+    /// Parental control URLs.
     case pcUrls = "PcUrls"
+    /// Parental control URL entry.
     case pcUrlsId = "PcUrlsId"
+    /// Parental control URLs.
     case parentalCtrlUrls = "ParentalCtrlUrls"
+    /// Parental control devices.
     case pcDevices = "PcDevices"
+    /// Parental control device settings.
     case pcDevicesMac = "PcDevicesMac"
+    /// Parental control device URLs.
     case pcDevicesMacUrls = "PcDevicesMacUrls"
+    /// Parental control device URL entry.
     case pcDevicesMacUrlsId = "PcDevicesMacUrlsId"
+    /// Parental control device services.
     case pcDevicesMacServices = "PcDevicesMacServices"
+    /// Parental control device service entry.
     case pcDevicesMacServicesId = "PcDevicesMacServicesId"
+    /// Parental control device schedules.
     case pcDevicesMacSchedules = "PcDevicesMacSchedules"
+    /// Parental control device schedule entry.
     case pcDevicesMacSchedulesId = "PcDevicesMacSchedulesId"
+    /// Firewall configuration.
     case firewall = "Firewall"
+    /// Firewall services.
     case firewallServices = "FirewallServices"
+    /// Firewall service entry.
     case firewallServicesId = "FirewallServicesId"
+    /// NAT configuration.
     case nat = "NAT"
+    /// IP NAT rules.
     case ipNat = "IpNat"
+    /// IP NAT rule entry.
     case ipNatId = "IpNatId"
+    /// Port NAT rules.
     case portNat = "PortNat"
+    /// Port NAT rule entry.
     case portNatId = "PortNatId"
+    /// Notification settings.
     case notifications = "Notifications"
+    /// Email notification settings.
     case notificationsEmail = "NotificationsEmail"
+    /// Quality of Service.
     case qos = "Qos"
+    /// Supported QoS features.
     case qosSupported = "QosSupported"
+    /// Run QoS analysis.
     case qosRun = "QosRun"
 
     // MARK: - Access Control
+    /// Access control.
     case access = "Access"
+    /// LAN GUI access control.
     case accessLanGui = "AccessLanGui"
+    /// WAN GUI access control.
     case accessWanGui = "AccessWanGui"
+    /// Allow WAN GUI access.
     case accessWanGuiAllow = "AccessWanGuiAllow"
+    /// Open API access control.
     case accessOpenApi = "AccessOpenApi"
+    /// LAN API access control.
     case accessLanApi = "AccessLanApi"
+    /// WAN API access control.
     case accessWanApi = "AccessWanApi"
+    /// OSP API access control.
     case accessOspApi = "AccessOspApi"
 
     // MARK: - Reporting
+    /// System reports.
     case report = "Report"
+    /// Dispatch system report.
     case reportDispatch = "ReportDispatch"
 }
 
@@ -277,8 +385,10 @@ extension FeatureID {
             return "Dynamic DNS configuration"
         case .ddnsProviders:
             return "Available DDNS providers"
-        case .pcUrls, .parentalCtrl:
+        case .parentalCtrl:
             return "Parental control"
+        case .pcUrls:
+            return "Parental control URLs"
         case .pcUrlsId:
             return "Parental control URL entry"
         case .parentalCtrlUrls:

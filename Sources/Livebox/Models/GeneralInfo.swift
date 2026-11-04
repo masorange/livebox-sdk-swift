@@ -1,6 +1,6 @@
 import Foundation
 
-/// Model representing the general information of a router
+/// General information about the router, as returned by ``LiveboxAPI/getGeneralInfo(completion:)``.
 public struct GeneralInfo: Codable {
     /// Manufacturer of the router
     public let manufacturer: String
@@ -47,7 +47,9 @@ public struct GeneralInfo: Codable {
     /// Provisioning code
     public let provisioningCode: String?
 
-    /// Uptime in seconds. Uses @FlexibleInt to support both Int and String values from different routers (e.g., ZTE routers may send this as a string)
+    /// Uptime in seconds.
+    ///
+    /// Decoded from either a number or a string, since some routers (such as ZTE) send it as a string.
     @FlexibleInt public var upTime: Int?
 
     /// First use date
@@ -74,15 +76,18 @@ public struct GeneralInfo: Codable {
     /// Whether a restore occurred
     public let restoreOccurred: Bool?
 
-    /// API version (mandatory since v2.2.7)
+    /// API version. Always present since API v2.2.7.
     public let apiVersion: String?
 
-    /// Router image URL (mandatory since v2.2.7)
+    /// Router image URL. Always present since API v2.2.7.
     public let routerImage: String?
 
-    /// Router name (mandatory since v2.2.7)
+    /// Router name. Always present since API v2.2.7.
     public let routerName: String?
 
+    /// Creates the general information of a router.
+    ///
+    /// Each parameter sets the property with the same name.
     public init(
         manufacturer: String,
         manufacturerOUI: String? = nil,

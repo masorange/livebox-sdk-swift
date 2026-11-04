@@ -1,10 +1,9 @@
 import Foundation
 import Livebox
 
-/// A collection of async/await extensions for the LiveboxAPI class.
+/// Async alternatives to the callback-based methods of `LiveboxAPI`.
 ///
-/// This extension provides async alternatives to the callback-based methods in LiveboxAPI,
-/// allowing for a more modern, structured concurrency approach while maintaining backward compatibility.
+/// Every method throws `LiveboxError`.
 extension LiveboxAPI {
     /// A helper function that executes an async throwing closure and ensures any thrown errors
     /// conform to a specific error type.
@@ -35,11 +34,14 @@ extension LiveboxAPI {
     }
 
     /// Authenticates with the router using the provided credentials.
+    ///
+    /// This method sets the credentials and fetches the capabilities to validate them.
+    /// It also checks that the router is compatible: incompatible routers don't publish any feature.
     /// - Parameters:
     ///   - username: Username for authentication (default: "UsrAdmin")
     ///   - password: Password for authentication
-    /// - Returns: A boolean indicating whether authentication was successful
-    /// - Throws: An error if authentication fails
+    /// - Returns: `true` if the router published at least one feature.
+    /// - Throws: An error if the credentials are invalid or the request fails. In that case, the previous credentials are restored.
     public func login(username: String = "UsrAdmin", password: String) async throws(LiveboxError) -> Bool {
         try await withErrorType(LiveboxError.self) {
             try await withCheckedThrowingContinuation { continuation in
@@ -50,7 +52,9 @@ extension LiveboxAPI {
         }
     }
 
-    /// Fetches the capabilities of the router using async/await.
+    /// Fetches the capabilities of the router.
+    ///
+    /// The capabilities are cached and used to build the requests of the other methods.
     /// - Returns: The router capabilities.
     /// - Throws: An error if the request fails.
     public func getCapabilities() async throws(LiveboxError) -> Capabilities {
@@ -63,7 +67,7 @@ extension LiveboxAPI {
         }
     }
 
-    /// Gets the router's general information using async/await.
+    /// Gets the router's general information.
     /// - Returns: The general information.
     /// - Throws: An error if the request fails.
     public func getGeneralInfo() async throws(LiveboxError) -> GeneralInfo {
@@ -76,7 +80,7 @@ extension LiveboxAPI {
         }
     }
 
-    /// Reboots the router using async/await.
+    /// Reboots the router.
     /// - Throws: An error if the request fails.
     public func reboot() async throws(LiveboxError) {
         try await withErrorType(LiveboxError.self) {
@@ -88,7 +92,7 @@ extension LiveboxAPI {
         }
     }
 
-    /// Gets the router's Wi-Fi interfaces using async/await.
+    /// Gets the router's Wi-Fi interfaces.
     /// - Returns: An array of Wi-Fi interfaces.
     /// - Throws: An error if the request fails.
     public func getWifiInterfaces() async throws(LiveboxError) -> [Wifi] {
@@ -106,8 +110,8 @@ extension LiveboxAPI {
         }
     }
 
-    /// Gets a specific router's Wi-Fi interface using async/await.
-    /// - Parameter wlanIfc: The ID of the Wi-Fi interface.
+    /// Gets a specific router's Wi-Fi interface.
+    /// - Parameter wlanIfc: The identifier of the Wi-Fi interface.
     /// - Returns: The requested Wi-Fi interface.
     /// - Throws: An error if the request fails.
     public func getWlanInterface(wlanIfc: String) async throws(LiveboxError) -> WlanInterface {
@@ -120,10 +124,10 @@ extension LiveboxAPI {
         }
     }
 
-    /// Gets details of a specific access Wi-Fi point.
+    /// Gets the details of a specific Wi-Fi access point.
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The ID of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     /// - Returns: The requested access point details.
     /// - Throws: An error if the request fails.
     public func getAccessPoint(wlanIfc: String, wlanAp: String) async throws(LiveboxError) -> AccessPoint {
@@ -138,8 +142,8 @@ extension LiveboxAPI {
 
     /// Updates the details of a specific Wi-Fi access point.
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The ID of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - accessPoint: The new details of the access point.
     /// - Returns: The updated access point details.
     /// - Throws: An error if the request fails.
@@ -157,8 +161,10 @@ extension LiveboxAPI {
         }
     }
 
-    /// Retrieves the list of connected devices.
-    /// - Returns: An array of connected devices.
+    /// Retrieves the list of devices known by the router.
+    ///
+    /// Check `DeviceInfo.active` to know whether a device is currently connected.
+    /// - Returns: The devices known by the router.
     /// - Throws: An error if the request fails.
     public func getConnectedDevices() async throws(LiveboxError) -> [DeviceInfo] {
         try await withErrorType(LiveboxError.self) {
@@ -171,8 +177,7 @@ extension LiveboxAPI {
     }
 
     /// Retrieves the details of a specific device.
-    /// - Parameters:
-    ///   - mac: The ID of the device.
+    /// - Parameter mac: The MAC address of the device.
     /// - Returns: The details of the device.
     /// - Throws: An error if the request fails.
     public func getDeviceDetail(mac: String) async throws(LiveboxError) -> DeviceDetail {
@@ -187,7 +192,7 @@ extension LiveboxAPI {
 
     /// Sets the alias of a specific device.
     /// - Parameters:
-    ///   - mac: The ID of the device.
+    ///   - mac: The MAC address of the device.
     ///   - alias: The new alias for the device.
     /// - Returns: The updated details of the device.
     /// - Throws: An error if the request fails.
@@ -201,9 +206,8 @@ extension LiveboxAPI {
         }
     }
 
-    /// Retrieves the schedules of a specific device.
-    /// - Parameters:
-    ///   - mac: The ID of the device.
+    /// Retrieves the parental control schedules of a specific device.
+    /// - Parameter mac: The MAC address of the device.
     /// - Returns: The schedules of the device.
     /// - Throws: An error if the request fails.
     public func getDeviceSchedules(mac: String) async throws(LiveboxError) -> Schedules {
@@ -216,11 +220,15 @@ extension LiveboxAPI {
         }
     }
 
-    /// Adds the schedules of a specific device.
+    /// Adds parental control schedules to a specific device.
+    ///
+    /// This method first enables the schedules of the device with
+    /// ``changeDeviceScheduleStatus(mac:status:)``, and then adds the schedules.
     /// - Parameters:
     ///   - mac: The MAC address of the device.
     ///   - schedules: The new schedules for the device.
-    /// - Throws: An error if the request fails.
+    /// - Returns: The schedules returned by the router.
+    /// - Throws: An error if any of the requests fails.
     public func addDeviceSchedules(mac: String, schedules: Schedules) async throws(LiveboxError) -> Schedules {
         try await withErrorType(LiveboxError.self) {
             try await withCheckedThrowingContinuation { continuation in
@@ -231,11 +239,13 @@ extension LiveboxAPI {
         }
     }
 
-    /// Changes the status of a connected device's schedule.
-    /// Automatically called by `addDeviceSchedules(_:_:_:)` before adding the schedules.
+    /// Enables or disables the parental control schedules of a device.
+    ///
+    /// ``addDeviceSchedules(mac:schedules:)`` calls this method to enable the schedules before adding them.
     /// - Parameters:
-    ///   - mac: The MAC of the device.
+    ///   - mac: The MAC address of the device.
     ///   - status: The status to set.
+    /// - Throws: An error if the request fails.
     public func changeDeviceScheduleStatus(mac: String, status: DeviceScheduleStatus) async throws(LiveboxError) {
         try await withErrorType(LiveboxError.self) {
             try await withCheckedThrowingContinuation { continuation in
@@ -246,10 +256,11 @@ extension LiveboxAPI {
         }
     }
 
-    /// Deletes the schedules of a specific device.
+    /// Deletes parental control schedules of a specific device.
     /// - Parameters:
-    ///   - mac: The MAC of the device.
+    ///   - mac: The MAC address of the device.
     ///   - schedules: The schedules to delete.
+    /// - Returns: The schedules returned by the router.
     /// - Throws: An error if the request fails.
     public func deleteDeviceSchedules(mac: String, schedules: Schedules) async throws(LiveboxError) -> Schedules {
         try await withErrorType(LiveboxError.self) {
@@ -261,14 +272,14 @@ extension LiveboxAPI {
         }
     }
 
-    /// Retrieves the schedules from the router.
+    /// Retrieves the Wi-Fi schedules of the router.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
-    /// - Returns: The schedules of the WLAN access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
+    /// - Returns: The Wi-Fi schedules of the router.
     /// - Throws: An error if the request fails.
     public func getWlanSchedules(wlanIfc: String, wlanAp: String) async throws(LiveboxError) -> Schedules {
         try await withErrorType(LiveboxError.self) {
@@ -280,15 +291,15 @@ extension LiveboxAPI {
         }
     }
 
-    /// Adds schedules to the router.
+    /// Adds Wi-Fi schedules to the router.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - schedules: The schedules to add.
-    /// - Returns: The updated schedules of the WLAN access point.
+    /// - Returns: The schedules returned by the router.
     /// - Throws: An error if the request fails.
     public func addWlanSchedules(wlanIfc: String, wlanAp: String, schedules: Schedules) async throws(LiveboxError) -> Schedules {
         try await withErrorType(LiveboxError.self) {
@@ -300,15 +311,15 @@ extension LiveboxAPI {
         }
     }
 
-    /// Deletes the router's schedule.
+    /// Deletes Wi-Fi schedules from the router.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - schedules: The schedules to delete.
-    /// - Returns: The updated schedules of the WLAN access point.
+    /// - Returns: The schedules returned by the router.
     /// - Throws: An error if the request fails.
     public func deleteWlanSchedules(wlanIfc: String, wlanAp: String, schedules: Schedules) async throws(LiveboxError) -> Schedules {
         try await withErrorType(LiveboxError.self) {
@@ -320,14 +331,14 @@ extension LiveboxAPI {
         }
     }
 
-    /// Retrieves the router's schedule.
+    /// Retrieves whether the router's Wi-Fi schedules are enabled.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
-    /// - Returns: The schedule status of the WLAN access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
+    /// - Returns: The Wi-Fi schedule status of the router.
     /// - Throws: An error if the request fails.
     public func getWlanScheduleStatus(wlanIfc: String, wlanAp: String) async throws(LiveboxError) -> WlanScheduleStatus {
         try await withErrorType(LiveboxError.self) {
@@ -339,13 +350,13 @@ extension LiveboxAPI {
         }
     }
 
-    /// Changes the router's schedule status.
+    /// Enables or disables the router's Wi-Fi schedules.
     ///
     /// - Warning: Despite requiring a WLAN interface and access point ID, this service affects the entire router.
     ///
     /// - Parameters:
-    ///   - wlanIfc: The ID of the Wi-Fi interface.
-    ///   - wlanAp: The MAC of the access point.
+    ///   - wlanIfc: The identifier of the Wi-Fi interface.
+    ///   - wlanAp: The identifier of the access point.
     ///   - status: The new schedule status to set.
     /// - Throws: An error if the request fails.
     public func changeWlanScheduleStatus(wlanIfc: String, wlanAp: String, status: WlanScheduleStatus) async throws(LiveboxError) {
@@ -361,6 +372,7 @@ extension LiveboxAPI {
 
 // MARK: - Additional Helpers
 
-/// Alias to make it clear this is the async-compatible version of LiveboxAPI
-/// This doesn't create a new type, but provides a more expressive way to use the async extensions
+/// An alias of ``Livebox/LiveboxAPI`` to make it explicit that the async methods are used.
+///
+/// It doesn't create a new type: an `AsyncLiveboxAPI` is a `LiveboxAPI`.
 public typealias AsyncLiveboxAPI = LiveboxAPI

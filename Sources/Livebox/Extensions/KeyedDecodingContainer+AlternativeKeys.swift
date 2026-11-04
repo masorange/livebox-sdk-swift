@@ -8,14 +8,13 @@ extension KeyedDecodingContainer {
     /// Decodes a value for the first key that exists in the container.
     ///
     /// Attempts to decode using each provided key in order until one succeeds.
-    /// Throws an error if none of the keys exist or if decoding fails for all keys.
+    /// Throws an error if decoding fails for all keys.
     ///
     /// - Parameters:
     ///   - type: The type to decode.
     ///   - keys: One or more keys to try, in order of preference.
     /// - Returns: The decoded value.
-    /// - Throws: `DecodingError.keyNotFound` if none of the keys exist,
-    ///           or other decoding errors if the value cannot be decoded.
+    /// - Throws: `DecodingError.typeMismatch` with the errors of every key if none of them can be decoded.
     ///
     /// Example:
     /// ```swift
@@ -52,12 +51,12 @@ extension KeyedDecodingContainer {
     /// Decodes an optional value for the first key that exists in the container.
     ///
     /// Attempts to decode using each provided key in order until one succeeds.
-    /// Returns `nil` if none of the keys exist or if the value is `null`.
+    /// Returns `nil` if none of the keys exist, or if their values are `null` or can't be decoded.
     ///
     /// - Parameters:
     ///   - type: The type to decode.
     ///   - keys: One or more keys to try, in order of preference.
-    /// - Returns: The decoded value, or `nil` if none of the keys exist or the value is `null`.
+    /// - Returns: The decoded value, or `nil` if none of the keys can be decoded.
     ///
     /// Example:
     /// ```swift
