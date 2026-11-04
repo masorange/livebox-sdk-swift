@@ -1,30 +1,35 @@
 import Foundation
 
-/// Global configuration for the Livebox framework.
-/// This class provides a centralized way to configure logging and other framework-wide settings.
+/// The global configuration of the Livebox SDK.
+///
+/// Use it to configure how HTTP requests and responses are logged.
 public final class LiveboxConfiguration {
 
     /// The shared singleton instance of the configuration.
     public static let shared = LiveboxConfiguration()
 
-    /// The logger instance to use for HTTP requests and responses.
-    /// By default, uses `DefaultLiveboxLogger` with logging enabled.
+    /// The logger used for HTTP requests and responses.
+    ///
+    /// Defaults to a ``DefaultLiveboxLogger``.
     public var logger: LiveboxLogger {
         didSet {
             updateLoggingStatus()
         }
     }
 
-    /// Whether logging is currently enabled.
-    /// This is automatically updated when the logger is changed.
+    /// Whether logging is enabled.
+    ///
+    /// It's `false` only when the logger is a ``SilentLiveboxLogger``.
     public private(set) var isLoggingEnabled: Bool
 
-    /// The minimum log level for messages to be logged.
-    /// Messages below this level will be filtered out.
+    /// The minimum level of the messages to log. Defaults to ``LiveboxLogLevel/debug``.
+    ///
+    /// Applied by ``DefaultLiveboxLogger``. Custom loggers receive every message and can read this value to filter them.
     public var minimumLogLevel: LiveboxLogLevel = .debug
 
-    /// Whether metrics logging is enabled.
-    /// When true, performance metrics will be logged separately.
+    /// Whether performance metrics are logged. Defaults to `true`.
+    ///
+    /// Applied by ``DefaultLiveboxLogger``. Custom loggers can read this value to decide whether to log metrics.
     public var metricsLoggingEnabled: Bool = true
 
     /// Private initializer to enforce singleton pattern.
@@ -38,8 +43,8 @@ public final class LiveboxConfiguration {
         isLoggingEnabled = !(logger is SilentLiveboxLogger)
     }
 
-    /// Enables logging using the default OSLog-based logger.
-    /// - Parameter subsystem: The subsystem identifier for logging. Defaults to the bundle identifier.
+    /// Enables logging with a new ``DefaultLiveboxLogger``.
+    /// - Parameter subsystem: The OSLog subsystem. Defaults to the main bundle identifier, or `com.masorange.livebox` if there is none.
     public func enableLogging(subsystem: String = Bundle.main.bundleIdentifier ?? "com.masorange.livebox") {
         self.logger = DefaultLiveboxLogger(subsystem: subsystem)
     }
@@ -76,29 +81,29 @@ public final class LiveboxConfiguration {
 
 extension LiveboxConfiguration {
 
-    /// Quick access to enable default logging.
+    /// Enables logging with a new ``DefaultLiveboxLogger`` on the shared configuration.
     public static func enableDefaultLogging() {
         shared.enableLogging()
     }
 
-    /// Quick access to disable logging.
+    /// Disables logging on the shared configuration.
     public static func disableLogging() {
         shared.disableLogging()
     }
 
-    /// Quick access to set a custom logger.
+    /// Sets a custom logger on the shared configuration.
     /// - Parameter logger: The custom logger to use
     public static func setLogger(_ logger: LiveboxLogger) {
         shared.setCustomLogger(logger)
     }
 
-    /// Sets the minimum log level for filtering.
+    /// Sets the minimum log level on the shared configuration.
     /// - Parameter level: The minimum level to log
     public static func setMinimumLogLevel(_ level: LiveboxLogLevel) {
         shared.minimumLogLevel = level
     }
 
-    /// Enables or disables metrics logging.
+    /// Enables or disables metrics logging on the shared configuration.
     /// - Parameter enabled: Whether to enable metrics logging
     public static func setMetricsLogging(enabled: Bool) {
         shared.metricsLoggingEnabled = enabled

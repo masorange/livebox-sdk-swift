@@ -1,9 +1,16 @@
+/// The details of a Wi-Fi interface and its access points, as returned by ``LiveboxAPI/getWlanInterface(wlanIfc:completion:)``.
 public struct WlanInterface: Codable {
+    /// The interface identifier (for example, `"24GHz"`), used as `wlanIfc` in other requests.
     public let id: String
+    /// The status of the interface.
     public let status: Status
+    /// The frequency band of the interface (for example, `"2.4GHz"`).
     public let frequency: String
+    /// The time of the last status change, as reported by the router.
     public let lastChangeTime: Int?
+    /// The time elapsed since the last status change, as reported by the router.
     public let lastChange: Int?
+    /// The access points of the interface.
     public let accessPoints: [ShortAccessPoint]
 
     private enum CodingKeys: String, CodingKey {
@@ -15,6 +22,9 @@ public struct WlanInterface: Codable {
         case accessPoints = "AccessPoints"
     }
 
+    /// Creates a Wi-Fi interface.
+    ///
+    /// Each parameter sets the property with the same name.
     public init(
         id: String,
         status: Status,
@@ -33,11 +43,18 @@ public struct WlanInterface: Codable {
 }
 
 extension WlanInterface {
+    /// The status of a Wi-Fi interface or access point.
     public enum Status: String, Codable {
+        /// Enabled.
         case up = "Up"
+        /// Disabled.
         case down = "Down"
+        /// The status is missing or not recognized.
         case unknown = "Unknown"
 
+        /// Creates a status from its raw value, ignoring case.
+        ///
+        /// Unrecognized values are mapped to ``unknown``, so this initializer never returns `nil`.
         public init?(rawValue: String) {
             switch rawValue.lowercased() {
             case "up":
@@ -60,8 +77,14 @@ extension WlanInterface.Status {
 }
 
 extension WlanInterface {
+    /// A summary of an access point of a Wi-Fi interface.
+    ///
+    /// Use ``LiveboxAPI/getAccessPoint(wlanIfc:wlanAp:completion:)`` with ``idx`` to get its full configuration.
     public struct ShortAccessPoint: Codable {
-        /// Index of the access point. If not provided during decoding, it is derived from the BSSID by removing colons
+        /// The identifier of the access point, used as `wlanAp` in other requests.
+        ///
+        /// Depending on the manufacturer and the network, routers identify access points either by an index
+        /// or by the BSSID without colons. If the response has no `Idx`, it's derived from the BSSID by removing colons.
         public let idx: String
 
         /// BSSID of the access point
@@ -87,6 +110,9 @@ extension WlanInterface {
             case remainingDuration = "RemainingDuration"
         }
 
+        /// Creates an access point summary.
+        ///
+        /// Each parameter sets the property with the same name.
         public init(
             idx: String,
             bssid: String,

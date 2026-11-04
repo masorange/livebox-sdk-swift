@@ -17,29 +17,37 @@ public enum LiveboxError: Error {
     /// An unexpected response was received from the server.
     case unexpectedResponse
 
-    /// An HTTP error occurred with the given status code.
+    /// The server responded with a non-successful HTTP status code (other than 401).
+    ///
+    /// The associated values are the status code and the response body, if any.
     case httpError(Int, Data?)
 
     /// A network error occurred during the request.
     case networkError(Error)
 
-    /// Authentication is required but not provided or is invalid.
+    /// The server responded with HTTP 401: credentials are missing or invalid.
     case authenticationRequired
 
     /// The requested feature was not found in the router's capabilities.
+    ///
+    /// The associated value is the feature identifier.
+    /// This also happens if the capabilities have not been fetched yet.
     case featureNotFound(String)
 
-    /// The requested path variables are invalid.
+    /// The path variables provided don't match the ones required by the feature URI.
     case invalidPathVariables(featureId: String, requiredVariables: String, providedVariables: [String: String])
 
     /// The requested operation is not supported by the feature.
+    ///
+    /// The associated values are the feature identifier and the operations that were required.
     case operationNotSupported(String, String)
 
-    /// A feature is not implemented in the mock implementation.
+    /// The feature is not implemented by the mock client used in tests.
     case notImplementedInMock(String)
 }
 
 extension LiveboxError: LocalizedError {
+    /// A readable description of the error.
     public var errorDescription: String? {
         switch self {
         case .invalidURL(let url):

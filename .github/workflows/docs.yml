@@ -1,0 +1,37 @@
+name: Documentation
+
+# The github-pages environment only allows deployments from tags (*.*.*): run it manually on a tag, not on a branch.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate DocC
+        run: ./scripts/generate-docs.sh
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}documentation/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

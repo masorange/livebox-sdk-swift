@@ -1,12 +1,19 @@
 import Foundation
 import os.log
 
-/// Log levels matching OSLogType for consistent logging behavior.
+/// The importance of a log message, from least to most important.
+///
+/// The levels match the `OSLogType` values used by ``DefaultLiveboxLogger``.
 public enum LiveboxLogLevel: String, CaseIterable {
+    /// Detailed information. Used for performance metrics.
     case debug
+    /// Regular activity. Used for requests and successful responses.
     case info
+    /// Notable activity. Used for responses with a status code outside the 2xx, 4xx and 5xx ranges.
     case `default`
+    /// Errors. Used for failed requests and HTTP 4xx responses.
     case error
+    /// Faults. Used for HTTP 5xx responses.
     case fault
 
     /// Converts to OSLogType for compatibility with OSLog.
@@ -32,7 +39,7 @@ public enum LiveboxLogLevel: String, CaseIterable {
     }
 }
 
-/// Metrics data for HTTP requests.
+/// Performance metrics of an HTTP request.
 public struct HTTPMetrics {
     /// The time when the request started.
     public let requestStartTime: CFAbsoluteTime
@@ -50,8 +57,10 @@ public struct HTTPMetrics {
     public let hadError: Bool
 }
 
-/// Protocol for custom logging implementations in Livebox.
-/// Developers can implement this protocol to provide their own logging behavior.
+/// A type that logs the HTTP requests and responses made by the SDK.
+///
+/// Implement this protocol and pass it to ``LiveboxConfiguration/setLogger(_:)`` to use your own logging system.
+/// Add ``LiveboxMetricsLogger`` conformance to also log performance metrics separately.
 public protocol LiveboxLogger {
     /// Logs an HTTP request.
     /// - Parameters:
@@ -70,7 +79,7 @@ public protocol LiveboxLogger {
     func logResponse(_ response: HTTPURLResponse?, data: Data?, error: Error?, level: LiveboxLogLevel, metrics: HTTPMetrics)
 }
 
-/// Extended protocol for loggers that want to handle metrics separately.
+/// A logger that also logs the performance metrics of each request separately.
 public protocol LiveboxMetricsLogger: LiveboxLogger {
     /// Logs metrics data for HTTP requests.
     /// - Parameters:
@@ -79,14 +88,22 @@ public protocol LiveboxMetricsLogger: LiveboxLogger {
     func logMetrics(_ metrics: HTTPMetrics, level: LiveboxLogLevel)
 }
 
-/// Default implementations for backward compatibility.
+// Overloads without a log level, kept for backward compatibility.
 extension LiveboxLogger {
-    /// Default implementation that calls the new method with .info level.
+    /// Logs an HTTP request at the ``LiveboxLogLevel/info`` level.
+    /// - Parameters:
+    ///   - request: The URLRequest being made
+    ///   - body: The request body data, if any
     public func logRequest(_ request: URLRequest, body: Data?) {
         logRequest(request, body: body, level: .info)
     }
 
-    /// Default implementation that calls the new method with appropriate level.
+    /// Logs an HTTP response at the ``LiveboxLogLevel/error`` level if there is an error,
+    /// or ``LiveboxLogLevel/info`` otherwise, with empty metrics.
+    /// - Parameters:
+    ///   - response: The HTTPURLResponse received
+    ///   - data: The response data, if any
+    ///   - error: Any error that occurred, if applicable
     public func logResponse(_ response: HTTPURLResponse?, data: Data?, error: Error?) {
         let level: LiveboxLogLevel = error != nil ? .error : .info
         let metrics = HTTPMetrics(
@@ -101,8 +118,10 @@ extension LiveboxLogger {
     }
 }
 
-/// Default logger implementation using OSLog.
-/// This logger provides structured logging with appropriate categories and levels.
+/// The default logger, which writes to OSLog.
+///
+/// Requests and responses are logged in the `LiveboxHTTP` category, and metrics in the `LiveboxMetrics` category.
+/// Messages below ``LiveboxConfiguration/minimumLogLevel`` are discarded.
 public final class DefaultLiveboxLogger: LiveboxLogger, LiveboxMetricsLogger {
 
     private let osLog: OSLog
@@ -122,6 +141,9 @@ public final class DefaultLiveboxLogger: LiveboxLogger, LiveboxMetricsLogger {
         return level.priority >= LiveboxConfiguration.shared.minimumLogLevel.priority
     }
 
+    /// Logs the method, URL and headers of a request, and its body if it's smaller than 1 KB.
+    ///
+    /// Sensitive headers, such as `Authorization`, are masked.
     public func logRequest(_ request: URLRequest, body: Data?, level: LiveboxLogLevel) {
         guard shouldLog(level: level) else { return }
 
@@ -147,6 +169,9 @@ public final class DefaultLiveboxLogger: LiveboxLogger, LiveboxMetricsLogger {
         self.logMessage(logMessage, level: level, log: osLog)
     }
 
+    /// Logs the status code, URL and duration of a response, and its body if it's smaller than 1 KB.
+    ///
+    /// If ``LiveboxConfiguration/metricsLoggingEnabled`` is `true`, it also logs the metrics at the ``LiveboxLogLevel/debug`` level.
     public func logResponse(_ response: HTTPURLResponse?, data: Data?, error: Error?, level: LiveboxLogLevel, metrics: HTTPMetrics) {
         guard shouldLog(level: level) else { return }
 
@@ -188,6 +213,7 @@ public final class DefaultLiveboxLogger: LiveboxLogger, LiveboxMetricsLogger {
         }
     }
 
+    /// Logs the metrics of a request, if ``LiveboxConfiguration/metricsLoggingEnabled`` is `true`.
     public func logMetrics(_ metrics: HTTPMetrics, level: LiveboxLogLevel) {
         guard LiveboxConfiguration.shared.metricsLoggingEnabled && shouldLog(level: level) else { return }
 
@@ -238,20 +264,25 @@ public final class DefaultLiveboxLogger: LiveboxLogger, LiveboxMetricsLogger {
     }
 }
 
-/// Silent logger that doesn't log anything.
-/// Useful when logging should be completely disabled.
+/// A logger that discards every message.
+///
+/// ``LiveboxConfiguration/disableLogging()-type.method`` sets this logger.
 public final class SilentLiveboxLogger: LiveboxLogger, LiveboxMetricsLogger {
 
+    /// Creates a silent logger.
     public init() {}
 
+    /// Discards the request.
     public func logRequest(_ request: URLRequest, body: Data?, level: LiveboxLogLevel) {
         // Intentionally empty - no logging
     }
 
+    /// Discards the response.
     public func logResponse(_ response: HTTPURLResponse?, data: Data?, error: Error?, level: LiveboxLogLevel, metrics: HTTPMetrics) {
         // Intentionally empty - no logging
     }
 
+    /// Discards the metrics.
     public func logMetrics(_ metrics: HTTPMetrics, level: LiveboxLogLevel) {
         // Intentionally empty - no logging
     }

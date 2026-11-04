@@ -39,10 +39,10 @@ class MockLiveboxClient: LiveboxClient {
     /// Record of all requests made.
     public private(set) var requestLog: [(endpoint: String, method: HTTPMethod, headers: [String: String]?, body: Data?)] = []
 
-    /// Defines whether fetchCapabilities should succeed or fail.
+    /// Whether getCapabilities should succeed or fail.
     var shouldFetchCapabilitiesSucceed = true
 
-    /// The capabilities to return when fetchCapabilities is called.
+    /// The capabilities to return when getCapabilities is called.
     public var mockedCapabilities = Capabilities(features: [
         Capabilities.Feature(
             id: "mock.feature.get",

@@ -1,8 +1,9 @@
 import Foundation
 
-/// Represents the capabilities of a router.
-/// This model is used to parse the response from the `/API/Capabilities` endpoint,
-/// which provides information about all the available features on the router.
+/// The capabilities of a router, as returned by the `/API/Capabilities` endpoint.
+///
+/// The capabilities list every feature the router supports, with its URI and the operations allowed on it.
+/// The SDK uses them to build the URL of each request.
 public struct Capabilities: Codable {
     /// The list of features available on the router.
     public let features: [Feature]
@@ -15,10 +16,10 @@ public struct Capabilities: Codable {
 extension Capabilities {
     /// Represents a feature (resource) available on the router.
     public struct Feature: Codable, Equatable {
-        /// Unique identifier for the feature.
+        /// The unique identifier of the feature. See ``FeatureID`` for the known values.
         public let id: String
 
-        /// The URI path for accessing this feature.
+        /// The URI of the feature. It can contain path variables, such as `{wlan_ifc}`.
         public let uri: String
 
         /// The operations that can be performed on this feature.
@@ -31,7 +32,7 @@ extension Capabilities {
         }
 
         /// Creates a full path for this feature by replacing path variables with actual values.
-        /// - Parameter pathVariables: A dictionary mapping path variable names to their values. For example, ["wlan_ifc": "2.4GHz"]
+        /// - Parameter pathVariables: A dictionary mapping path variable names to their values. For example, `["wlan_ifc": "2.4GHz"]`.
         /// - Returns: The full path with variables replaced by their values.
         public func getPath(pathVariables: [String: String] = [:]) -> String {
             var path = uri
@@ -43,13 +44,13 @@ extension Capabilities {
 
         /// Checks if the feature supports a specific operation.
         /// - Parameter operation: The operation to check for.
-        /// - Returns: True if the operation is supported, false otherwise.
+        /// - Returns: `true` if the operation is supported, `false` otherwise.
         public func supports(operation: Operation) -> Bool {
             return ops.contains(operation)
         }
 
         /// Extracts path variable names from the URI.
-        /// - Returns: An array of path variable names found in the URI.
+        /// - Returns: The path variable names found in the URI, without braces. For example, `["wlan_ifc", "wlan_ap"]`.
         public func getPathVariableNames() -> [String] {
             let pattern = "\\{([^\\}]+)\\}"
             let regex = try? NSRegularExpression(pattern: pattern)

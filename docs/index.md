@@ -1,1 +1,0 @@
-Livebox SDK for Swift

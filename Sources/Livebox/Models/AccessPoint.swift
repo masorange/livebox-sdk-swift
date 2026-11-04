@@ -1,24 +1,58 @@
+/// The configuration of a Wi-Fi access point (an SSID broadcast by a Wi-Fi interface).
+///
+/// Use ``copy(status:ssid:password:ssidAdvertisementEnabled:retryLimit:wmmEnable:uapsdEnable:apBridgeDisable:channelConf:bandwidthConf:mode:)``
+/// to change the editable values and send the result with ``LiveboxAPI/updateAccessPoint(wlanIfc:wlanAp:accessPoint:completion:)``.
 public struct AccessPoint: Codable {
+    /// The access point index, if the router provides one.
+    ///
+    /// Depending on the manufacturer and the network, routers identify access points either by this index
+    /// or by the BSSID without colons. ``WlanInterface/ShortAccessPoint/idx`` always contains the right one.
+    ///
+    /// Decoded from either `idx` or `Idx`, since some routers (such as ZTE) use a different capitalization.
     public let idx: String?
+    /// The BSSID (MAC address) of the access point.
     public let bssid: String
+    /// Whether this is the home or the guest network.
     public let type: AccessPointType
+    /// Whether the access point is combined with the other bands or split from them.
     public let manner: Manner
+    /// Whether the access point is enabled.
     public var status: Status
+    /// The network name (SSID).
     public var ssid: String
+    /// The network password.
     public var password: String
+    /// Whether the SSID is broadcast. When `false`, the network is hidden.
     public var ssidAdvertisementEnabled: Bool?
+    /// The retry limit of the access point.
+    ///
+    /// Not documented by the router firmware.
     @FlexibleInt public var retryLimit: Int?
+    /// Whether the access point supports Wi-Fi Multimedia (WMM).
     public let wmmCapability: Bool?
+    /// Whether the access point supports Unscheduled Automatic Power Save Delivery (U-APSD).
     public let uapsdCapability: Bool?
+    /// Whether Wi-Fi Multimedia (WMM) is enabled.
     public var wmmEnable: Bool?
+    /// Whether Unscheduled Automatic Power Save Delivery (U-APSD) is enabled.
     public var uapsdEnable: Bool?
+    /// The maximum number of devices that can connect at the same time.
     @FlexibleInt public var maxStations: Int?
+    /// A bridge setting of the access point. Usually `false`.
+    ///
+    /// Not documented by the router firmware.
     public var apBridgeDisable: Bool?
+    /// The channel selection mode.
     public var channelConf: ChannelConf
+    /// The channel currently in use.
     @FlexibleInt public var channel: Int?
+    /// The configured channel bandwidth.
     public var bandwidthConf: BandwidthConf
+    /// The channel bandwidth currently in use (for example, `"80MHz"`).
     public let bandwidth: String
+    /// The Wi-Fi standards enabled on the access point, for example `"b/g/n"`.
     public var mode: String?
+    /// Whether schedule management is enabled for this access point.
     public let schedulingAllowed: Bool
 
     private enum CodingKeys: String, CodingKey {
@@ -46,6 +80,9 @@ public struct AccessPoint: Codable {
         case schedulingAllowed = "SchedulingAllowed"
     }
 
+    /// Creates an access point configuration.
+    ///
+    /// Each parameter sets the property with the same name.
     public init(
         idx: String? = nil,
         bssid: String,
@@ -154,6 +191,10 @@ public struct AccessPoint: Codable {
 }
 
 extension AccessPoint {
+    /// Returns a copy of the access point with the given values replaced.
+    ///
+    /// Parameters left as `nil` keep their current value. Each parameter replaces the property with the same name.
+    /// - Returns: The updated access point.
     public func copy(
         status: AccessPoint.Status? = nil,
         ssid: String? = nil,
@@ -208,11 +249,18 @@ extension AccessPoint {
 }
 
 extension AccessPoint {
+    /// The network an access point belongs to.
     public enum AccessPointType: RawRepresentable, Codable {
+        /// The main (home) network.
         case home
+        /// The guest network.
         case guest
+        /// A network type not recognized by the SDK, with its raw value.
         case unknown(String)
 
+        /// Creates a network type from its raw value, ignoring case.
+        ///
+        /// Unrecognized values are kept in ``unknown(_:)``.
         public init(rawValue: String) {
             switch rawValue.lowercased() {
             case "home":
@@ -224,6 +272,7 @@ extension AccessPoint {
             }
         }
 
+        /// The raw value sent to and received from the router.
         public var rawValue: String {
             switch self {
             case .home:
@@ -238,10 +287,16 @@ extension AccessPoint {
 }
 
 extension AccessPoint {
+    /// How an access point is shared across frequency bands.
     public enum Manner: String, Codable {
+        /// The access point is shared with the other bands.
         case combined = "Combined"
+        /// The access point is independent from the other bands.
         case split = "Split"
 
+        /// Creates a value from its raw value, ignoring case.
+        ///
+        /// Returns `nil` if the value is not recognized.
         public init?(rawValue: String) {
             switch rawValue.lowercased() {
             case "combined":
@@ -256,10 +311,16 @@ extension AccessPoint {
 }
 
 extension AccessPoint {
+    /// The status of an access point.
     public enum Status: String, Codable {
+        /// The access point is enabled.
         case up = "Up"
+        /// The access point is disabled.
         case down = "Down"
 
+        /// Creates a value from its raw value, ignoring case.
+        ///
+        /// Returns `nil` if the value is not recognized.
         public init?(rawValue: String) {
             switch rawValue.lowercased() {
             case "up":
@@ -274,11 +335,18 @@ extension AccessPoint {
 }
 
 extension AccessPoint {
+    /// The channel selection mode of an access point.
     public enum ChannelConf: String, Codable {
+        /// The router selects the channel automatically.
         case auto = "Auto"
+        /// Automatic channel selection, variant 1. Only available on 5 GHz access points.
         case auto1 = "Auto1"
+        /// Automatic channel selection, variant 2. Only available on 5 GHz access points.
         case auto2 = "Auto2"
 
+        /// Creates a value from its raw value, ignoring case.
+        ///
+        /// Returns `nil` if the value is not recognized.
         public init?(rawValue: String) {
             switch rawValue.lowercased() {
             case "auto":
@@ -295,16 +363,28 @@ extension AccessPoint {
 }
 
 extension AccessPoint {
+    /// The channel bandwidth configuration of an access point.
     public enum BandwidthConf: RawRepresentable, Codable {
+        /// The router selects the bandwidth automatically.
         case auto
+        /// 20 MHz.
         case _20mhz
+        /// 40 MHz.
         case _40mhz
+        /// 80 MHz.
         case _80mhz
+        /// 160 MHz.
         case _160mhz
+        /// 20 or 40 MHz.
         case _20_40mhz
+        /// 80, 40 or 20 MHz.
         case _80_40_20mhz
+        /// A bandwidth not recognized by the SDK, with its raw value.
         case unknown(String)
 
+        /// Creates a bandwidth from its raw value, ignoring case.
+        ///
+        /// Unrecognized values are kept in ``unknown(_:)``, so this initializer never returns `nil`.
         public init?(rawValue: String) {
             switch rawValue.lowercased() {
             case "auto":
@@ -326,6 +406,7 @@ extension AccessPoint {
             }
         }
 
+        /// The raw value sent to and received from the router.
         public var rawValue: String {
             switch self {
             case .auto:
