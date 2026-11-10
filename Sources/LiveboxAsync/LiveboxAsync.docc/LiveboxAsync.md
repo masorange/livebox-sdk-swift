@@ -2,6 +2,10 @@
 
 Use the Livebox API with Swift concurrency.
 
+@Metadata {
+    @PageImage(purpose: card, source: "liveboxasync-card", alt: "Two crossing arrows")
+}
+
 ## Overview
 
 LiveboxAsync extends ``Livebox/LiveboxAPI`` with `async` versions of its callback-based methods.

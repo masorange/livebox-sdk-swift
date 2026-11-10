@@ -4,10 +4,10 @@ A Swift package for interacting with Livebox routers. This SDK provides a clean,
 
 ## Features
 
-- 🔄 **Dynamic API Discovery**: Automatically fetches and works with the capabilities of your router
-- 🔒 **Type Safety**: Swift's type system ensures your API calls are correct
-- ⚙️ **Flexible Configuration**: Support for different router models with varying capabilities
-- 🔀 **Multiple Programming Styles**: Choose between traditional callbacks or modern async/await
+- **Dynamic API Discovery**: Automatically fetches and works with the capabilities of your router
+- **Type Safety**: Swift's type system ensures your API calls are correct
+- **Flexible Configuration**: Support for different router models with varying capabilities
+- **Multiple Programming Styles**: Choose between traditional callbacks or modern async/await
 
 ## Installation
 
@@ -31,6 +31,7 @@ The SDK now provides a flexible authentication model that makes dependency injec
 
 ```swift
 import Livebox
+import LiveboxAsync
 
 // Recommended: Create service without authentication first
 let service = try LiveboxAPI(baseURLString: "http://192.168.1.1")
@@ -46,7 +47,7 @@ let authenticatedService = try LiveboxAPI(
 )
 ```
 
-The project uses Swift's new Testing framework for unit tests instead of XCTest, providing a more modern and declarative testing experience.
+<!-- docs-landing-end: everything above is also the landing page of the DocC documentation -->
 
 ## Usage
 
