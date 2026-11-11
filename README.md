@@ -2,6 +2,10 @@
 
 A Swift package for interacting with Livebox routers. This SDK provides a clean, type-safe way to interact with router APIs without hardcoding endpoints.
 
+<!-- readme-only-start -->
+> Looking for Android or the JVM? See [livebox-sdk-kotlin](https://github.com/masorange/livebox-sdk-kotlin).
+<!-- readme-only-end -->
+
 ## Features
 
 - **Dynamic API Discovery**: Automatically fetches and works with the capabilities of your router
@@ -46,6 +50,9 @@ let authenticatedService = try LiveboxAPI(
     password: "yourpassword"
 )
 ```
+
+<!-- docs-only: ## Other Platforms -->
+<!-- docs-only: Looking for Android or the JVM? See the [Kotlin SDK documentation](https://masorange.github.io/livebox-sdk-kotlin/). -->
 
 <!-- docs-landing-end: everything above is also the landing page of the DocC documentation -->
 
