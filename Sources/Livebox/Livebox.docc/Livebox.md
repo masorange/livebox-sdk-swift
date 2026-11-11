@@ -2,6 +2,10 @@
 
 Configure and monitor Livebox and compatible routers through their local REST API.
 
+@Metadata {
+    @PageImage(purpose: card, source: "livebox-card", alt: "Up and down arrows")
+}
+
 ## Overview
 
 Livebox lets you read router information, manage Wi-Fi interfaces and access points,

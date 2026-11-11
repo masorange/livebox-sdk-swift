@@ -20,6 +20,25 @@ swift package --allow-writing-to-directory "$OUTPUT_DIR" \
     --hosting-base-path "$HOSTING_BASE_PATH" \
     --output-path "$OUTPUT_DIR"
 
+# DocC can't use custom content for the combined landing page yet, so render the top of the README
+# (up to the docs-landing-end marker) and inject it into the synthesized page, keeping the module cards.
+# readme-only blocks are dropped and `<!-- docs-only: ... -->` lines are uncommented.
+# shortcut: image assets aren't copied, copy them too if the README top gets images.
+LANDING_DIR="$(mktemp -d)"
+trap 'rm -rf "$LANDING_DIR"' EXIT
+mkdir "$LANDING_DIR/Landing.docc"
+sed -e '/<!-- docs-landing-end/,$d' \
+    -e '/<!-- readme-only-start/,/<!-- readme-only-end/d' \
+    -e 's/^<!-- docs-only: \(.*\) -->$/\1/' README.md > "$LANDING_DIR/Landing.docc/Landing.md"
+xcrun docc convert "$LANDING_DIR/Landing.docc" --output-path "$LANDING_DIR/out" >/dev/null
+jq --slurpfile readme "$LANDING_DIR/out/data/documentation/landing.json" '
+    .metadata.title = $readme[0].metadata.title
+    | .abstract = $readme[0].abstract
+    | .primaryContentSections = $readme[0].primaryContentSections
+    | .references += ($readme[0].references // {})
+' "$OUTPUT_DIR/data/documentation.json" > "$LANDING_DIR/documentation.json"
+mv "$LANDING_DIR/documentation.json" "$OUTPUT_DIR/data/documentation.json"
+
 # Skip Jekyll processing on GitHub Pages
 touch "$OUTPUT_DIR/.nojekyll"
 

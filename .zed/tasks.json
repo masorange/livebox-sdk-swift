@@ -45,13 +45,15 @@
     //           "args": ["--login"]
     //         }
     //     }
-    "shell": "system",
-    // Represents the tags for inline runnable indicators, or spawning multiple tasks at once.
-    "tags": []
+    "shell": "system"
   },
   {
     "label": "Run Tests in Parallel",
     "command": "swift test",
     "args": ["--parallel"]
+  },
+  {
+    "label": "Preview Documentation",
+    "command": "./scripts/generate-docs.sh && mkdir -p /tmp/pages && ln -sfn \"$PWD/docs\" /tmp/pages/livebox-sdk-swift && open http://localhost:8000/livebox-sdk-swift/ && python3 -m http.server 8000 -d /tmp/pages"
   }
 ]
